@@ -38,7 +38,7 @@ JSON
 run_alive(){
   local label="$1"; shift
   set +e
-  timeout 4s "$@" >/tmp/forge-smoke.log 2>&1
+  timeout --kill-after=1s 3s "$@" >/tmp/forge-smoke.log 2>&1
   local rc=$?
   set -e
   if [[ $rc -eq 124 ]]; then
