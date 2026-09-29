@@ -2,7 +2,7 @@
 
 Date: 2026-09-29
 Repository baseline: GitHub `main` commit `1b88209`
-Local QA branch tip: `39ef482`
+Local QA branch tip: `3c6ccca`
 
 ## Automated result
 
