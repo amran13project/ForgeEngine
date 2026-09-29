@@ -1,5 +1,6 @@
 #include "runtime/RuntimeApp.h"
 #include <algorithm>
+#include <cmath>
 
 namespace forge::runtime {
 static uint32_t rgb(uint32_t value) { return value & 0x00FFFFFFu; }
@@ -16,13 +17,40 @@ bool RuntimeApp::initialize(std::string& error) {
     return true;
 }
 
-void RuntimeApp::run() { window_.run(); }
+void RuntimeApp::run() { lastTick_ = std::chrono::steady_clock::now(); window_.run(); }
+
+bool RuntimeApp::isPressed(platform::Key key) const {
+    const auto index = static_cast<std::size_t>(key);
+    return index < keys_.size() && keys_[index];
+}
+
+void RuntimeApp::tick(double dt) {
+    runtimeTime_ += dt;
+    auto* player = scene_.selected();
+    if (!player) return;
+    const float speed = 3.0f * static_cast<float>(dt);
+    if (isPressed(platform::Key::A) || isPressed(platform::Key::Left)) player->position.x -= speed;
+    if (isPressed(platform::Key::D) || isPressed(platform::Key::Right)) player->position.x += speed;
+    if (isPressed(platform::Key::W) || isPressed(platform::Key::Up)) player->position.z -= speed;
+    if (isPressed(platform::Key::S) || isPressed(platform::Key::Down)) player->position.z += speed;
+    // A small deterministic animation proves runtime state is updating.
+    player->rotation.y = std::sin(static_cast<float>(runtimeTime_)) * 0.35f;
+}
 
 void RuntimeApp::onEvent(const platform::InputEvent& event) {
-    if (event.type == platform::InputEvent::Type::Close) window_.requestClose();
+    if (event.type == platform::InputEvent::Type::Close) { window_.requestClose(); return; }
+    if (event.type == platform::InputEvent::Type::KeyDown) {
+        const auto index = static_cast<std::size_t>(event.key);
+        if (index < keys_.size()) keys_[index] = true;
+        if (event.key == platform::Key::Escape) window_.requestClose();
+    }
 }
 
 void RuntimeApp::paint(int width, int height) {
+    const auto now = std::chrono::steady_clock::now();
+    const double rawDt = std::chrono::duration<double>(now - lastTick_).count();
+    lastTick_ = now;
+    tick(std::clamp(rawDt, 0.0, 0.05));
     const int left = 24;
     const int top = 52;
     const int right = std::max(left + 100, width - 24);

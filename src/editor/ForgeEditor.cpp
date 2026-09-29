@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
+#include <vector>
 
 using forge::platform::InputEvent;
 using forge::platform::Key;
@@ -146,6 +147,7 @@ void ForgeEditor::paintCreate() {
 }
 
 void ForgeEditor::paintEditor() {
+    tickPlay();
     const int W = window_.width(), H = window_.height();
     const int top = 52;
     const int statusH = 24;
@@ -275,8 +277,58 @@ void ForgeEditor::paintEditor() {
         window_.drawText(18, tabY + 82, "F5 Play   Ctrl+S Save   F6 Build   F7 Doctor   F8 AI   F9 Tests   F10 Systems", C(0x526376), 11);
     }
 
-    window_.drawText(12, H - 8, "FORGE ENGINE PROFESSIONAL 3.0  ·  Native Editor  ·  Local-first", C(0x4B5A6A), 10);
+    window_.drawText(12, H - 8, "FORGE ENGINE PROFESSIONAL 3.1  ·  Native Editor  ·  Local-first", C(0x4B5A6A), 10);
     window_.drawText(W - 170, H - 8, playing_ ? "PLAY MODE" : "EDITOR READY", playing_ ? C(0x7BC39B) : C(0x6B7E91), 10);
+}
+
+void ForgeEditor::beginPlay() {
+    if (playing_ || project_.root.empty()) return;
+    playStartPositions_.clear();
+    playStartPositions_.reserve(scene_.entities().size());
+    for (const auto& entity : scene_.entities()) playStartPositions_.push_back(entity.position);
+    physics_.clear();
+    for (const auto& entity : scene_.entities()) {
+        if (entity.type == "Mesh") {
+            physics_.addBody({entity.id, entity.position, {}, {0.5f,0.5f,0.5f}, 1.0f, true});
+        }
+    }
+    playing_ = true;
+    paused_ = false;
+    playTime_ = 0.0;
+    lastPlayTick_ = std::chrono::steady_clock::now();
+    setStatus("[RUNTIME] Play started · simulation active");
+}
+
+void ForgeEditor::stopPlay() {
+    if (!playing_) return;
+    const auto count = std::min(playStartPositions_.size(), scene_.entities().size());
+    for (size_t i = 0; i < count; ++i) scene_.entities()[i].position = playStartPositions_[i];
+    physics_.clear();
+    playStartPositions_.clear();
+    playing_ = false;
+    paused_ = false;
+    playTime_ = 0.0;
+    setStatus("[RUNTIME] Play stopped · editor state restored");
+}
+
+void ForgeEditor::tickPlay() {
+    if (!playing_ || paused_) return;
+    const auto now = std::chrono::steady_clock::now();
+    const double rawDt = std::chrono::duration<double>(now - lastPlayTick_).count();
+    lastPlayTick_ = now;
+    const float dt = static_cast<float>(std::clamp(rawDt, 0.0, 0.05));
+    if (dt <= 0.0f) return;
+    playTime_ += dt;
+    physics_.step(dt);
+    for (auto& body : physics_.bodies()) {
+        for (auto& entity : scene_.entities()) {
+            if (entity.id == body.entityId) {
+                entity.position = body.position;
+                break;
+            }
+        }
+    }
+    system_.tick(dt);
 }
 
 void ForgeEditor::runPublish() {
@@ -349,7 +401,7 @@ void ForgeEditor::handleEditorClick(int x, int y) {
     const int top = 52, statusH = 24, bottomH = std::clamp(H / 4, 150, 220), contentBottom = H - bottomH - statusH;
     const int leftW = std::clamp(W / 6, 220, 270), rightW = std::clamp(W / 5, 290, 340), centerW = std::max(300, W - leftW - rightW), rightX = leftW + centerW;
     if (y < top) {
-        if (x > 80 && x < 160) { playing_ = !playing_; paused_ = false; setStatus(playing_ ? "[RUNTIME] Play started" : "[RUNTIME] Play stopped"); }
+        if (x > 80 && x < 160) { if (playing_) stopPlay(); else beginPlay(); }
         else if (x >= 160 && x < 232) saveScene(); else if (x >= 232 && x < 312) runBuild(); else if (x >= 312 && x < 394) runDoctor(); else if (x >= 394 && x < 462) runAI(); else if (x >= 462 && x < 532) runTests(); else if (x >= 532 && x < 620) runPublish();
         return;
     }
@@ -382,7 +434,7 @@ void ForgeEditor::handleKey(Key k) {
     if(screen_==ForgeScreen::CreateProject){ if(k==Key::Tab) activeField_=activeField_==0?1:0; else if(k==Key::Enter) createProject(); window_.invalidate(); return; }
     if(screen_==ForgeScreen::Publish){ if(k==Key::F6){ std::string e; auto r=build::BuildCenter().build(project_.root,project_.root/"Builds"/"Release","Release"); setStatus(r.success?"[PUBLISH] Release build created":"[PUBLISH] ERROR - "+r.message); } window_.invalidate(); return; }
     auto* e=scene_.selected(); const float step=0.25f;
-    if(k==Key::F5||k==Key::Space){playing_=!playing_;setStatus(playing_?"[RUNTIME] Play started":"[RUNTIME] Play stopped");}
+    if(k==Key::F5||k==Key::Space){ if (playing_) stopPlay(); else beginPlay(); }
     else if(k==Key::F6) runBuild(); else if(k==Key::F7) runDoctor(); else if(k==Key::F8) runAI(); else if(k==Key::F9) runTests(); else if(k==Key::F10) runPublish();
     else if(k==Key::DeleteKey&&e){scene_.removeSelected();setStatus("[SCENE] Deleted selected entity");}
     else if(e){if(k==Key::Left)e->position.x-=step;else if(k==Key::Right)e->position.x+=step;else if(k==Key::Up)e->position.z-=step;else if(k==Key::Down)e->position.z+=step;else if(k==Key::W)e->position.y+=step;else if(k==Key::S)e->position.y-=step;else if(k==Key::N)panel_=Panel::Network;else if(k==Key::P)panel_=Panel::Profiler;else if(k==Key::A)panel_=Panel::Assets;else if(k==Key::R)takeSnapshot();}

@@ -3,7 +3,7 @@
 #include <iostream>
 
 int main() {
-    std::cout << "Forge Engine Professional 3.0.0 - CREATE WITHOUT LIMITS\n";
+    std::cout << "Forge Engine Professional 3.1.0 - CREATE WITHOUT LIMITS\n";
     forge::core::ForgeSystem system;
     if (!system.initialize()) {
         std::cerr << "Forge Engine initialization failed: " << system.lastError() << "\n";
