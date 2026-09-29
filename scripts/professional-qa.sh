@@ -6,4 +6,5 @@ rm -rf "$BUILD"
 cmake -S "$ROOT" -B "$BUILD" -DFORGE_BUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug
 cmake --build "$BUILD" -j2
 ctest --test-dir "$BUILD" --output-on-failure
-printf '\n[QA] Native build + all CTest suites: PASS\n'
+"$ROOT/scripts/native-smoke-test.sh"
+printf '\n[QA] Native build + all CTest suites + smoke tests: PASS\n'

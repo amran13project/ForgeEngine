@@ -4,7 +4,7 @@ This suite is a release-candidate engineering check, not a claim of feature pari
 
 ## Automated checks
 
-Run on Linux/macOS:
+Run the complete automated QA pass:
 
 ```bash
 ./scripts/professional-qa.sh
@@ -21,6 +21,8 @@ ctest --test-dir build-qa --output-on-failure
 The suite covers engine initialization, project lifecycle, scene persistence, transforms, assets, physics, visual scripting, networking, profiler, build packaging, Project Doctor, recovery, procedural world generation, testing center, publishing validation/manifest generation, compliance, localization, security baseline, account DOB policy, and AI orchestration/permissions.
 
 ## Native application smoke test
+
+The automated runner also executes the native editor and runtime under a virtual X display where available. An application remaining alive for the full smoke window is a pass; an early exit/crash is a failure.
 
 ### Windows
 
