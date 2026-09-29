@@ -1,11 +1,8 @@
-build/
+/build/
 .vs/
 *.user
 *.suo
-Cache/
-
-Toolchain/
-Cache/
-build/
-bin/
+/Cache/
+/Toolchain/
+/bin/
 .forgeengine/
