@@ -21,6 +21,8 @@
 #include "workspace/WorkspaceProfile.h"
 #include "accessibility/AccessibilitySettings.h"
 #include "account/AccountService.h"
+#include "account/AccountPolicy.h"
+#include "ai_platform/AIOrchestrator.h"
 #include <cassert>
 #include <filesystem>
 #include <iostream>
@@ -49,6 +51,19 @@ int main(){
         const auto home = root / "AccountHome"; std::filesystem::create_directories(home); const char* oldHome=std::getenv("HOME"); std::string oldHomeValue=oldHome?oldHome:""; setenv("HOME",home.string().c_str(),1);
         account::AccountService acct; assert(acct.load(err)); account::AccountProfile ap; ap.displayName="Creator"; ap.email="creator@forge.test"; ap.dateOfBirth="01/01/2000"; ap.country="Malaysia"; ap.timezone="Local"; ap.language="English"; assert(acct.signUp(ap,"password123",err)); account::AccountService acct2; assert(acct2.load(err)); assert(acct2.logIn("creator@forge.test","password123",err)); assert(!acct2.logIn("creator@forge.test","wrongpass",err));
         if(oldHome) setenv("HOME",oldHomeValue.c_str(),1); else unsetenv("HOME");
+    }
+    {
+        assert(account::AccountPolicy::isValidDateOfBirth("01/01/2000"));
+        assert(!account::AccountPolicy::isValidDateOfBirth("31/02/2000"));
+        assert(account::AccountPolicy::birthdayMatches("01/01/2000", "01/01/2026"));
+        assert(account::AccountPolicy::classify("01/01/2000") == account::AgeBracket::Adult);
+        assert(account::AccountPolicy::birthdayGreeting("Creator").find("Happy Birthday") != std::string::npos);
+        aiplatform::AIOrchestrator orchestrator; auto snapshot = orchestrator.inspect(p.root); assert(snapshot.projectFileValid && snapshot.files > 0);
+        auto aiPlan = orchestrator.plan(aiplatform::Mode::Publish, "prepare release", snapshot); assert(aiPlan.size() >= 2); assert(orchestrator.permissionRequired(aiplatform::Permission::Publish));
+        assert(aiplatform::AIOrchestrator::permissionName(aiplatform::Permission::Build) == "Build");
+        publish::StoreProfile direct; direct.store=publish::Store::Direct; direct.appName="Test Game"; direct.publisher="Forge"; direct.description="Test"; direct.version="1.0.0"; direct.buildNumber="1";
+        auto directPlan = publish::PublishCenter().validate(direct, p.root); bool hasBlocking=false; for(const auto& i:directPlan.issues) if(i.error) hasBlocking=true; assert(!hasBlocking);
+        std::string manifestErr; assert(publish::PublishCenter().writeSubmissionManifest(direct, p.root, manifestErr)); assert(std::filesystem::exists(p.root/"Publishing/Direct Distribution/SubmissionManifest.json"));
     }
     fsys.shutdown(); std::filesystem::remove_all(root,ec); std::cout<<"ForgeCoreTests: ALL PASS\n"; return 0;
 }

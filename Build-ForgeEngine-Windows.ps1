@@ -120,7 +120,7 @@ $core = @(
 'physics\Physics.cpp','ai\AI.cpp','scripting\VisualScript.cpp','audio\Audio.cpp','network\NetworkLab.cpp',
 'profiler\Profiler.cpp','build\BuildCenter.cpp','doctor\ProjectDoctor.cpp','recovery\Recovery.cpp',
 'plugins\PluginManager.cpp','testing\TestingCenter.cpp','world\WorldGenerator.cpp',
-'account\AccountService.cpp','ai_platform\ForgeAI.cpp','publish\PublishCenter.cpp',
+'account\AccountService.cpp','account\AccountPolicy.cpp','ai_platform\ForgeAI.cpp','ai_platform\AIOrchestrator.cpp','publish\PublishCenter.cpp',
 'compliance\ComplianceChecker.cpp','localization\LocalizationManager.cpp',
 'accessibility\AccessibilitySettings.cpp','security\SecurityCenter.cpp',
 'release\ReleaseManager.cpp','workspace\WorkspaceProfile.cpp',

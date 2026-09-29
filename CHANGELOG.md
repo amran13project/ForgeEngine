@@ -19,3 +19,12 @@ Added native foundations for public creator workflows:
 - Git-first repository workflow and one-click Windows push helper
 
 The release remains honest about production boundaries: hosted authentication, third-party model credentials, platform signing and store approvals are external integrations.
+
+## 3.1.0 — Creator Platform Foundation
+
+- Added account date-of-birth validation and age classification helpers.
+- Added centralized birthday greeting policy.
+- Added AI orchestrator with project inspection, task planning, provider metadata, and permission boundaries.
+- Added store-aware publishing requirements and submission manifest generation.
+- Integrated AI orchestration and publishing manifest preparation into the native editor.
+- Updated Windows portable builder and CMake source lists for the new modules.

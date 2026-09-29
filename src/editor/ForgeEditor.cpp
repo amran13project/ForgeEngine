@@ -279,9 +279,24 @@ void ForgeEditor::paintEditor() {
     window_.drawText(W - 170, H - 8, playing_ ? "PLAY MODE" : "EDITOR READY", playing_ ? C(0x7BC39B) : C(0x6B7E91), 10);
 }
 
-void ForgeEditor::runPublish() { publishProfile_.appName = project_.name; publishProfile_.publisher = account_.profile().displayName.empty()?"Forge Creator":account_.profile().displayName; if(publishProfile_.packageId.empty()) publishProfile_.packageId="com.forge."+project_.id.substr(0,8); auto plan=publisher_.validate(publishProfile_,project_.root); size_t errors=0; for(const auto& i:plan.issues) if(i.error) ++errors; screen_=ForgeScreen::Publish; panel_=Panel::Publish; setStatus(errors==0?"[PUBLISH] Validation ready":"[PUBLISH] "+std::to_string(errors)+" blocking issue(s)"); }
+void ForgeEditor::runPublish() {
+    publishProfile_.appName = project_.name;
+    publishProfile_.publisher = account_.profile().displayName.empty()?"Forge Creator":account_.profile().displayName;
+    if(publishProfile_.packageId.empty()) publishProfile_.packageId="com.forge."+project_.id.substr(0,8);
+    auto plan=publisher_.validate(publishProfile_,project_.root);
+    size_t errors=0; for(const auto& i:plan.issues) if(i.error) ++errors;
+    screen_=ForgeScreen::Publish; panel_=Panel::Publish;
+    if(errors==0){ std::string manifestError; if(!publisher_.writeSubmissionManifest(publishProfile_,project_.root,manifestError)) setStatus("[PUBLISH] ERROR — "+manifestError); else setStatus("[PUBLISH] Validation ready · submission manifest prepared"); }
+    else setStatus("[PUBLISH] "+std::to_string(errors)+" blocking issue(s)");
+}
 void ForgeEditor::submitLogin() { std::string e; if(account_.logIn(authEmail_,authPassword_,e)){screen_=ForgeScreen::Hub;authPassword_.clear();std::string d;if(account_.birthdayToday(d))setStatus("[ACCOUNT] Happy Birthday!  "+d);else setStatus("[ACCOUNT] Signed in");}else setStatus("[ACCOUNT] ERROR - "+e); }
-void ForgeEditor::submitSignup() { account::AccountProfile p; p.displayName=authDisplay_;p.email=authEmail_;p.dateOfBirth=authDob_;p.country=authCountry_;p.timezone="Local";p.language=localization_.language();std::string e;if(account_.signUp(p,authPassword_,e)){screen_=ForgeScreen::Hub;authPassword_.clear();std::string d;if(account_.birthdayToday(d))setStatus("[ACCOUNT] Happy Birthday!  "+d);else setStatus("[ACCOUNT] Account created");}else setStatus("[ACCOUNT] ERROR - "+e); }
+void ForgeEditor::submitSignup() {
+    if(!account::AccountPolicy::isValidDateOfBirth(authDob_)){ setStatus("[ACCOUNT] ERROR - Date of birth must be valid DD/MM/YYYY"); return; }
+    account::AccountProfile p; p.displayName=authDisplay_;p.email=authEmail_;p.dateOfBirth=authDob_;p.country=authCountry_;p.timezone="Local";p.language=localization_.language();
+    std::string e;
+    if(account_.signUp(p,authPassword_,e)){screen_=ForgeScreen::Hub;authPassword_.clear();std::string d;if(account_.birthdayToday(d))setStatus("[ACCOUNT] "+account::AccountPolicy::birthdayGreeting(account_.profile().displayName));else setStatus("[ACCOUNT] Account created");}
+    else setStatus("[ACCOUNT] ERROR - "+e);
+}
 void ForgeEditor::paintPublish() { const int W=window_.width(),H=window_.height(); window_.drawRect(0,0,W,H,C(0x0B0F14),true); window_.drawRect(0,0,W,60,C(0x121922),true); window_.drawText(28,38,"FORGE PUBLISH CENTER",C(0xF2F6FA),22); const int x=42,cw=std::min(900,W-84); drawPanel(x,88,cw,H-140,C(0x111922),C(0x2B3845)); window_.drawText(x+24,124,"DESTINATION",C(0x9DB0C0),11); publish::Store stores[]={publish::Store::GooglePlay,publish::Store::AppleAppStore,publish::Store::MicrosoftStore,publish::Store::Steam,publish::Store::Direct}; int bx=x+24; for(int i=0;i<5;++i){drawButton(bx,140,142,34,publish::PublishCenter::storeName(stores[i]),publishProfile_.store==stores[i]);bx+=150;} auto field=[&](int yy,const char* label,const std::string& value){window_.drawText(x+24,yy,label,C(0xAEBCC8),11);drawPanel(x+24,yy+9,cw-48,38,C(0x171F28),C(0x30404C));window_.drawText(x+38,yy+34,value,C(0xE9EFF3),12);}; field(198,"App Name",publishProfile_.appName); field(252,"Publisher",publishProfile_.publisher); field(306,"Package / Bundle ID",publishProfile_.packageId); field(360,"Version",publishProfile_.version); field(414,"Privacy Policy URL",publishProfile_.privacyUrl.empty()?"<not configured>":publishProfile_.privacyUrl); auto plan=publisher_.validate(publishProfile_,project_.root); int yy=476; window_.drawText(x+24,yy,"VALIDATION",C(0x9DB0C0),11); for(size_t i=0;i<std::min<size_t>(6,plan.issues.size());++i){window_.drawText(x+24,yy+28+static_cast<int>(i)*24,(plan.issues[i].error?"ERROR  ":"WARN   ")+plan.issues[i].field+" - "+plan.issues[i].message,plan.issues[i].error?C(0xD59885):C(0xA6B7C4),10);} drawButton(x+24,H-102,100,36,"Back"); drawButton(x+138,H-102,150,36,"Validate",true); drawButton(x+300,H-102,120,36,"Build"); drawButton(x+432,H-102,120,36,"Upload"); window_.drawText(x+570,H-80,"Upload requires a connected developer account and platform approval.",C(0x637588),10); }
 
 void ForgeEditor::createProject() {
@@ -306,7 +321,13 @@ void ForgeEditor::openProject() {
 void ForgeEditor::saveScene() { std::string e; if (scene_.save(project_.root / project_.defaultScene, e)) setStatus("[SCENE] Saved"); else setStatus("[SCENE] ERROR — " + e); }
 void ForgeEditor::runBuild() { auto out = project_.root / "Builds" / "Development"; auto r = build::BuildCenter().build(project_.root, out, "Development"); setStatus(r.success ? "[BUILD] Success · " + std::to_string(r.files) + " files" : "[BUILD] ERROR — " + r.message); panel_ = Panel::Build; }
 void ForgeEditor::runDoctor() { panel_ = Panel::Doctor; setStatus("[DOCTOR] Diagnostic scan ready"); }
-void ForgeEditor::runAI() { panel_ = Panel::AI; auto r=forgeAI_.ask(aiplatform::Mode::Review,"review current project"); setStatus("[AI] " + r.text.substr(0, 96)); }
+void ForgeEditor::runAI() {
+    panel_ = Panel::AI;
+    const auto snapshot = aiOrchestrator_.inspect(project_.root);
+    const auto tasks = aiOrchestrator_.plan(aiplatform::Mode::Review, "review current project", snapshot);
+    const auto response = forgeAI_.ask(aiplatform::Mode::Review, "review current project");
+    setStatus("[AI] " + std::to_string(snapshot.files) + " files · " + std::to_string(tasks.size()) + " planned steps · " + response.plan.summary);
+}
 void ForgeEditor::runTests() { auto r = tests_.run(); size_t pass = 0; for (auto& t : r) if (t.passed) ++pass; panel_ = Panel::Tests; setStatus("[TEST] " + std::to_string(pass) + "/" + std::to_string(r.size()) + " passed"); }
 void ForgeEditor::takeSnapshot() { std::string e; auto p = recovery_.snapshot(project_.root, "editor", e); setStatus(p.empty() ? "[RECOVERY] ERROR — " + e : "[RECOVERY] Snapshot created"); }
 void ForgeEditor::generateWorld() { worldGen_.generate(scene_, "dark forest village"); saveScene(); setStatus("[WORLD] Editable procedural scene baseline generated"); }

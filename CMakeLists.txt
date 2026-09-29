@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(ForgeEngineProfessional VERSION 3.0.0 LANGUAGES CXX)
+project(ForgeEngineProfessional VERSION 3.1.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -24,7 +24,9 @@ set(FORGE_CORE_SOURCES
     src/testing/TestingCenter.cpp
     src/world/WorldGenerator.cpp
     src/account/AccountService.cpp
+    src/account/AccountPolicy.cpp
     src/ai_platform/ForgeAI.cpp
+    src/ai_platform/AIOrchestrator.cpp
     src/publish/PublishCenter.cpp
     src/compliance/ComplianceChecker.cpp
     src/localization/LocalizationManager.cpp
@@ -40,7 +42,7 @@ add_executable(ForgeRuntime src/runtime_main.cpp ${FORGE_CORE_SOURCES} ${FORGE_P
 
 foreach(target ForgeEngine ForgeRuntime)
     target_include_directories(${target} PRIVATE src)
-    target_compile_definitions(${target} PRIVATE FORGE_ENGINE_VERSION="3.0.0" NOMINMAX WIN32_LEAN_AND_MEAN)
+    target_compile_definitions(${target} PRIVATE FORGE_ENGINE_VERSION="3.1.0" NOMINMAX WIN32_LEAN_AND_MEAN)
     if(MSVC)
         target_compile_options(${target} PRIVATE /W4 /permissive- /EHsc)
     else()

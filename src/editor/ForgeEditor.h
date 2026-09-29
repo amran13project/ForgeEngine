@@ -16,7 +16,9 @@
 #include "plugins/PluginManager.h"
 #include "renderer/SoftwareRenderer.h"
 #include "account/AccountService.h"
+#include "account/AccountPolicy.h"
 #include "ai_platform/ForgeAI.h"
+#include "ai_platform/AIOrchestrator.h"
 #include "publish/PublishCenter.h"
 #include "compliance/ComplianceChecker.h"
 #include "localization/LocalizationManager.h"
@@ -44,7 +46,7 @@ private:
     ForgeScreen screen_{ForgeScreen::Login}; Panel panel_{Panel::Scene};
     project::ProjectInfo project_{}; scene::Scene scene_{}; assets::AssetDatabase assets_{}; physics::PhysicsWorld physics_{};
     profiler::Profiler profiler_{}; network::NetworkLab network_{}; renderer::SoftwareRenderer renderer_{}; doctor::ProjectDoctor doctor_{}; recovery::Recovery recovery_{}; plugins::PluginManager* pluginsPtr_{nullptr}; testing::TestingCenter tests_{}; ai::RuleAIProvider aiProvider_{}; world::WorldGenerator worldGen_{};
-    account::AccountService account_{}; aiplatform::ForgeAI forgeAI_{}; publish::PublishCenter publisher_{}; compliance::ComplianceChecker compliance_{}; localization::LocalizationManager localization_{}; accessibility::AccessibilitySettings accessibility_{}; security::SecurityCenter security_{}; release::ReleaseManager releases_{}; workspace::WorkspaceProfile workspace_{}; publish::StoreProfile publishProfile_{};
+    account::AccountService account_{}; aiplatform::ForgeAI forgeAI_{}; aiplatform::AIOrchestrator aiOrchestrator_{}; publish::PublishCenter publisher_{}; compliance::ComplianceChecker compliance_{}; localization::LocalizationManager localization_{}; accessibility::AccessibilitySettings accessibility_{}; security::SecurityCenter security_{}; release::ReleaseManager releases_{}; workspace::WorkspaceProfile workspace_{}; publish::StoreProfile publishProfile_{};
     std::string status_{"Ready"}, log_{"[STARTUP] INFO - Forge Engine Professional platform online"}; std::string projectName_{"MyGame"}, projectLocation_{}; std::string authDisplay_, authEmail_, authPassword_, authDob_, authCountry_{"Malaysia"}; int activeField_{0}; int authField_{0}; bool playing_{false}; bool paused_{false}; double playTime_{0}; int mouseX_{-1}; int mouseY_{-1};
 };
 }
