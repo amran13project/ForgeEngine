@@ -2,6 +2,7 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 BUILD="$ROOT/build-qa"
+[[ -x "$BUILD/ForgeEngine" ]] || BUILD="$ROOT/build"
 TMP="$(mktemp -d)"
 cleanup(){ rm -rf "$TMP"; }
 trap cleanup EXIT
