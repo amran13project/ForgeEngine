@@ -1,0 +1,10 @@
+#include "assets/AssetDatabase.h"
+#include <fstream>
+#include <cctype>
+#include <functional>
+namespace forge::assets {
+AssetType AssetDatabase::classify(const std::filesystem::path&p){auto e=p.extension().string();for(char&c:e)c=static_cast<char>(std::tolower(static_cast<unsigned char>(c)));if(e==".obj"||e==".fbx"||e==".gltf"||e==".glb")return AssetType::Model;if(e==".png"||e==".jpg"||e==".jpeg"||e==".tga"||e==".bmp")return AssetType::Texture;if(e==".wav"||e==".ogg"||e==".mp3")return AssetType::Audio;if(e==".forgeScene")return AssetType::Scene;if(e==".cpp"||e==".h"||e==".hpp"||e==".cs"||e==".fs")return AssetType::Script;if(e==".json"||e==".csv")return AssetType::Data;if(e==".mat")return AssetType::Material;if(e==".anim")return AssetType::Animation;return AssetType::Unknown;}
+const char* AssetDatabase::typeName(AssetType t){switch(t){case AssetType::Model:return"Model";case AssetType::Texture:return"Texture";case AssetType::Material:return"Material";case AssetType::Animation:return"Animation";case AssetType::Audio:return"Audio";case AssetType::Scene:return"Scene";case AssetType::Script:return"Script";case AssetType::UI:return"UI";case AssetType::VFX:return"VFX";case AssetType::Data:return"Data";default:return"Unknown";}}
+bool AssetDatabase::scan(const std::filesystem::path&root,std::string&error){try{assets_.clear();if(!std::filesystem::exists(root)){error="Asset root does not exist";return false;}for(auto&it:std::filesystem::recursive_directory_iterator(root)){if(!it.is_regular_file())continue;AssetRecord r;r.path=it.path();r.type=classify(r.path);r.size=it.file_size();r.modified=it.last_write_time();std::hash<std::string>h;r.id=std::to_string(h(std::filesystem::absolute(r.path).string()));r.cached=std::filesystem::exists(root.parent_path()/"Cache"/"assets.index");assets_.push_back(r);}std::ofstream(root.parent_path()/"Cache/assets.index",std::ios::trunc)<<assets_.size()<<" assets indexed\n";return true;}catch(const std::exception&e){error=e.what();return false;}}
+size_t AssetDatabase::count(AssetType t) const{size_t n=0;for(const auto&a:assets_)if(a.type==t)++n;return n;}
+}

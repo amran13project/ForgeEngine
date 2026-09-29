@@ -1,0 +1,9 @@
+FORGE ENGINE CREATOR EDITION
+Native C++20 game-engine baseline + portable Windows build bootstrap
+
+Use:
+1. Build-ForgeEngine-Windows.cmd
+2. Run-ForgeEngine.cmd
+3. Create a real project in Forge Hub
+
+The package does not include a precompiled Windows EXE because the build environment used to create this archive is Linux-only.

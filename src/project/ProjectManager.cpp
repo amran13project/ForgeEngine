@@ -1,0 +1,26 @@
+#include "project/ProjectManager.h"
+#include <chrono>
+#include <cstdlib>
+#include <fstream>
+#include <random>
+#include <sstream>
+
+namespace fs=std::filesystem;
+namespace forge::project {
+static std::string makeId(){ const auto now=std::chrono::high_resolution_clock::now().time_since_epoch().count(); std::mt19937_64 rng(static_cast<uint64_t>(now)); std::ostringstream o; o<<std::hex<<now<<rng(); return o.str(); }
+static bool createDirs(const fs::path& root){ const char* dirs[]={"Assets","Scenes","Scripts","Models","Textures","Materials","Animations","Audio","UI","VFX","Plugins","Settings","Cache","Logs","Builds","Packages","Tests","Saves"}; for(const char*d:dirs) fs::create_directories(root/d); return true; }
+static std::string jsonEscape(const std::string&s){ std::string r; for(char c:s){ if(c=='\\')r+="\\\\"; else if(c=='\"')r+="\\\""; else r+=c; } return r; }
+static std::string readString(const std::string&s,const std::string&key){ const std::string n="\""+key+"\""; auto p=s.find(n); if(p==std::string::npos)return{}; p=s.find(':',p); if(p==std::string::npos)return{}; p=s.find('"',p); if(p==std::string::npos)return{}; auto e=s.find('"',p+1); return e==std::string::npos?std::string():s.substr(p+1,e-p-1); }
+fs::path ProjectManager::defaultProjectsDirectory(){
+#ifdef _WIN32
+ const char* u=std::getenv("USERPROFILE"); return u?fs::path(u)/"ForgeProjects":fs::path("C:/ForgeProjects");
+#else
+ const char* h=std::getenv("HOME"); return h?fs::path(h)/"ForgeProjects":fs::path("/tmp/ForgeProjects");
+#endif
+}
+std::string ProjectManager::sanitizeName(const std::string& in){ std::string s; for(char c:in){ if((c>='a'&&c<='z')||(c>='A'&&c<='Z')||(c>='0'&&c<='9')||c=='-'||c=='_')s+=c; else if(c==' ')s+='_'; } return s.empty()?"MyForgeGame":s; }
+bool ProjectManager::saveProject(const ProjectInfo&p,std::string&error) const{ try{std::ofstream f(p.root/"ForgeProject.json",std::ios::trunc); if(!f){error="Cannot write ForgeProject.json";return false;} f<<"{\n"<<"  \"projectId\": \""<<jsonEscape(p.id)<<"\",\n"<<"  \"projectName\": \""<<jsonEscape(p.name)<<"\",\n"<<"  \"engineVersion\": \""<<p.engineVersion<<"\",\n"<<"  \"projectVersion\": \""<<p.projectVersion<<"\",\n"<<"  \"defaultScene\": \""<<p.defaultScene<<"\",\n"<<"  \"template\": \""<<p.templateName<<"\",\n"<<"  \"targetPlatforms\": [\"Windows\",\"Linux\",\"Android\"],\n"<<"  \"enabledModules\": [\"Core\",\"Renderer\",\"2D\",\"3D\",\"Physics\",\"Animation\",\"Audio\",\"AI\",\"UI\",\"Profiler\",\"Build\"],\n"<<"  \"rendering\": {\"profile\": \"High\"},\n"<<"  \"physics\": {\"backend\": \"ForgePhysics\"},\n"<<"  \"audio\": {\"enabled\": true},\n"<<"  \"networking\": {\"enabled\": false}\n}\n"; return true;}catch(const std::exception&e){error=e.what();return false;} }
+bool ProjectManager::createProject(const std::string&raw,const fs::path&requested,const std::string&templ,ProjectInfo&out,std::string&error) const{ try{const std::string name=sanitizeName(raw);fs::path root=requested; if(root.filename()!=name)root/=name; if(fs::exists(root/"ForgeProject.json")){error="A Forge project already exists at this location";return false;}fs::create_directories(root);createDirs(root);out={makeId(),name,"2.0.0","1.0.0","Scenes/Main.forgeScene",templ,fs::absolute(root)};if(!saveProject(out,error))return false;std::ofstream scene(out.root/out.defaultScene);scene<<"{\n  \"sceneVersion\": 2,\n  \"name\": \"Main\",\n  \"environment\": \"Default\",\n  \"entities\": [\n    {\"id\":1,\"name\":\"MainCamera\",\"type\":\"Camera\",\"position\":[0,2,8],\"scale\":[1,1,1]},\n    {\"id\":2,\"name\":\"Cube\",\"type\":\"Mesh\",\"position\":[0,0,0],\"scale\":[1,1,1]},\n    {\"id\":3,\"name\":\"DirectionalLight\",\"type\":\"Light\",\"position\":[4,6,2],\"scale\":[1,1,1]}\n  ]\n}\n"; if(!scene){error="Cannot write default scene";return false;}std::ofstream(out.root/"Settings/EditorSettings.json")<<"{\n  \"workspace\": \"Default\",\n  \"autosaveSeconds\": 30,\n  \"theme\": \"ForgeDark\"\n}\n";std::ofstream(out.root/"Logs/creation.log")<<"Forge Engine project created.\n";std::ofstream(out.root/"Saves/.keep");return true;}catch(const std::exception&e){error=e.what();return false;} }
+bool ProjectManager::openProject(const fs::path&root,ProjectInfo&out,std::string&error) const{ try{fs::path p=fs::absolute(root);std::ifstream f(p/"ForgeProject.json");if(!f){error="ForgeProject.json not found";return false;}std::stringstream ss;ss<<f.rdbuf();std::string s=ss.str();out.id=readString(s,"projectId");out.name=readString(s,"projectName");out.engineVersion=readString(s,"engineVersion");out.projectVersion=readString(s,"projectVersion");out.defaultScene=readString(s,"defaultScene");out.templateName=readString(s,"template");out.root=p;if(out.name.empty()||out.id.empty()){error="Invalid Forge project metadata";return false;}return true;}catch(const std::exception&e){error=e.what();return false;} }
+std::vector<ProjectInfo> ProjectManager::discoverProjects(const fs::path&base) const{ std::vector<ProjectInfo> result; std::error_code ec; if(!fs::exists(base,ec))return result; for(const auto&entry:fs::directory_iterator(base,ec)){if(ec)break;if(!entry.is_directory())continue;ProjectInfo p;std::string err;if(openProject(entry.path(),p,err))result.push_back(p);}return result; }
+}

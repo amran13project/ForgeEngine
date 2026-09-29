@@ -1,0 +1,3 @@
+#include "plugins/PluginManager.h"
+#include <fstream>
+namespace forge::plugins {static std::string read(const std::string&s,const std::string&k){auto p=s.find("\""+k+"\"");if(p==std::string::npos)return{};p=s.find(':',p);p=s.find('"',p);auto e=s.find('"',p+1);return e==std::string::npos?std::string():s.substr(p+1,e-p-1);}std::vector<Plugin> PluginManager::discover(const std::filesystem::path&root)const{std::vector<Plugin>r;if(!std::filesystem::exists(root))return r;for(auto&i:std::filesystem::directory_iterator(root)){if(!i.is_directory())continue;auto f=i.path()/"plugin.json";std::ifstream in(f);if(!in)continue;std::string s((std::istreambuf_iterator<char>(in)),{});r.push_back({read(s,"id"),read(s,"name"),read(s,"version"),i.path(),true});}return r;}}

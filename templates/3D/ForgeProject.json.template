@@ -1,0 +1,9 @@
+{
+  "template": "3D",
+  "engineVersion": "2.0.0",
+  "projectVersion": "1.0.0",
+  "targetPlatforms": ["Windows", "Linux"],
+  "renderingProfile": "High",
+  "physicsProfile": "Default",
+  "networking": false
+}

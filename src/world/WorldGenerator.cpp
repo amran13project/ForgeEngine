@@ -1,0 +1,2 @@
+#include "world/WorldGenerator.h"
+namespace forge::world {bool WorldGenerator::generate(scene::Scene&s,const std::string&d){s.clear();s.add("World","Environment");s.add("MainCamera","Camera");auto&ground=s.add("Ground","Mesh");ground.scale={8,0.25f,8};for(int i=0;i<6;++i){auto&e=s.add("GeneratedObject_"+std::to_string(i+1),d.find("forest")!=std::string::npos?"Tree":"Mesh");e.position={static_cast<float>((i%3)-1)*3.f,1.f,static_cast<float>((i/3))*3.f};e.scale={1,static_cast<float>(1+(i%2)),1};}s.select(ground.id);return true;}}

@@ -1,0 +1,3 @@
+#include "network/NetworkLab.h"
+#include <algorithm>
+namespace forge::network {void NetworkLab::configure(double l,double j,double loss){latency_=std::max(0.0,l);jitter_=std::max(0.0,j);loss_=std::clamp(loss,0.0,100.0);}void NetworkLab::send(const std::string&p,double now){std::uniform_real_distribution<double>u(0,100);++stats_.sent;if(u(rng_)<loss_){++stats_.dropped;return;}std::normal_distribution<double>d(latency_,std::max(0.1,jitter_));double delay=std::max(0.0,d(rng_));stats_.simulatedLatencyMs=delay;queue_.push_back({seq_++,now+delay/1000.0,p});}void NetworkLab::tick(double now){while(!queue_.empty()&&queue_.front().sentAt<=now){queue_.pop_front();++stats_.delivered;}}}

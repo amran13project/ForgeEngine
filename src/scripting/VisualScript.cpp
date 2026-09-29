@@ -1,0 +1,2 @@
+#include "scripting/VisualScript.h"
+namespace forge::scripting {bool Graph::execute(std::unordered_map<std::string,float>&v,std::vector<std::string>&log)const{for(const auto&n:nodes_){switch(n.op){case Op::Set:v[n.key]=n.value;break;case Op::Add:v[n.key]+=n.value;break;case Op::Print:log.push_back(n.text);break;case Op::BranchGreater:if(v[n.key]>n.value)log.push_back(n.text);break;}}return true;}}

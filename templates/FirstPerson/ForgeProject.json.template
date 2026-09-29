@@ -1,0 +1,7 @@
+{
+  "template": "FirstPerson",
+  "engineVersion": "2.0.0",
+  "projectVersion": "1.0.0",
+  "targetPlatforms": ["Windows"],
+  "renderingProfile": "3D"
+}
