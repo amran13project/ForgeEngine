@@ -62,7 +62,7 @@ int main(){
         auto aiPlan = orchestrator.plan(aiplatform::Mode::Publish, "prepare release", snapshot); assert(aiPlan.size() >= 2); assert(orchestrator.permissionRequired(aiplatform::Permission::Publish));
         assert(aiplatform::AIOrchestrator::permissionName(aiplatform::Permission::Build) == "Build");
         publish::StoreProfile direct; direct.store=publish::Store::Direct; direct.appName="Test Game"; direct.publisher="Forge"; direct.description="Test"; direct.version="1.0.0"; direct.buildNumber="1";
-        auto directPlan = publish::PublishCenter().validate(direct, p.root); bool hasBlocking=false; for(const auto& i:directPlan.issues) if(i.error) hasBlocking=true; assert(!hasBlocking);
+        auto directPlan = publish::PublishCenter().validate(direct, p.root); bool hasBlocking=false; for(const auto& i:directPlan.issues) if(i.error) hasBlocking=true; assert(!hasBlocking); (void)hasBlocking;
         std::string manifestErr; assert(publish::PublishCenter().writeSubmissionManifest(direct, p.root, manifestErr)); assert(std::filesystem::exists(p.root/"Publishing/Direct Distribution/SubmissionManifest.json"));
     }
     fsys.shutdown(); std::filesystem::remove_all(root,ec); std::cout<<"ForgeCoreTests: ALL PASS\n"; return 0;

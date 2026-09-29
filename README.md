@@ -39,3 +39,10 @@ Run `Build-ForgeEngine-Windows.cmd`. The portable builder downloads/reuses a nat
 ## Repository policy
 
 Git is the source of truth. Development artifacts, toolchains, build output and account data must not be committed.
+
+
+## 3.2.0 Full Creator Candidate
+
+This branch consolidates the native editor/runtime workflow and adds reusable input, gameplay, animation, UI, material, prefab, and hot-reload foundations under the same C++20/CMake architecture.
+
+The repository is still explicit about platform/toolchain boundaries: unsupported targets are reported rather than marked successful, and external store publishing requires real credentials and platform approval.

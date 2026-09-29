@@ -124,6 +124,7 @@ $core = @(
 'compliance\ComplianceChecker.cpp','localization\LocalizationManager.cpp',
 'accessibility\AccessibilitySettings.cpp','security\SecurityCenter.cpp',
 'release\ReleaseManager.cpp','workspace\WorkspaceProfile.cpp',
+'input\InputSystem.cpp','gameplay\GameplayToolkit.cpp','animation\AnimationSystem.cpp','ui\WidgetTree.cpp','material\Material.cpp','prefab\Prefab.cpp','hotreload\HotReload.cpp',
 'platform\NativeWindow.cpp','renderer\SoftwareRenderer.cpp'
 )
 $editor = @($core + @('editor\ForgeEditor.cpp'))
