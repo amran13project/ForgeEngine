@@ -116,7 +116,7 @@ function Compile-Target([string]$name, [string]$mainFile, [string[]]$extraSource
 }
 
 $core = @(
-'core\ForgeSystem.cpp','project\ProjectManager.cpp','scene\Scene.cpp','assets\AssetDatabase.cpp',
+'core\ForgeSystem.cpp','platform\Environment.cpp','project\ProjectManager.cpp','scene\Scene.cpp','assets\AssetDatabase.cpp',
 'physics\Physics.cpp','ai\AI.cpp','scripting\VisualScript.cpp','audio\Audio.cpp','network\NetworkLab.cpp',
 'profiler\Profiler.cpp','build\BuildCenter.cpp','doctor\ProjectDoctor.cpp','recovery\Recovery.cpp',
 'plugins\PluginManager.cpp','testing\TestingCenter.cpp','world\WorldGenerator.cpp',

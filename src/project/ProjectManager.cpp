@@ -1,6 +1,6 @@
 #include "project/ProjectManager.h"
+#include "platform/Environment.h"
 #include <chrono>
-#include <cstdlib>
 #include <fstream>
 #include <random>
 #include <sstream>
@@ -13,9 +13,9 @@ static std::string jsonEscape(const std::string&s){ std::string r; for(char c:s)
 static std::string readString(const std::string&s,const std::string&key){ const std::string n="\""+key+"\""; auto p=s.find(n); if(p==std::string::npos)return{}; p=s.find(':',p); if(p==std::string::npos)return{}; p=s.find('"',p); if(p==std::string::npos)return{}; auto e=s.find('"',p+1); return e==std::string::npos?std::string():s.substr(p+1,e-p-1); }
 fs::path ProjectManager::defaultProjectsDirectory(){
 #ifdef _WIN32
- const char* u=std::getenv("USERPROFILE"); return u?fs::path(u)/"ForgeProjects":fs::path("C:/ForgeProjects");
+ const auto u=platform::getEnvironmentVariable("USERPROFILE"); return !u.empty()?fs::path(u)/"ForgeProjects":fs::path("C:/ForgeProjects");
 #else
- const char* h=std::getenv("HOME"); return h?fs::path(h)/"ForgeProjects":fs::path("/tmp/ForgeProjects");
+ const auto h=platform::getEnvironmentVariable("HOME"); return !h.empty()?fs::path(h)/"ForgeProjects":fs::path("/tmp/ForgeProjects");
 #endif
 }
 std::string ProjectManager::sanitizeName(const std::string& in){ std::string s; for(char c:in){ if((c>='a'&&c<='z')||(c>='A'&&c<='Z')||(c>='0'&&c<='9')||c=='-'||c=='_')s+=c; else if(c==' ')s+='_'; } return s.empty()?"MyForgeGame":s; }

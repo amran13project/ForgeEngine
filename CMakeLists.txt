@@ -8,6 +8,7 @@ option(FORGE_BUILD_TESTS "Build Forge Engine tests" ON)
 
 set(FORGE_CORE_SOURCES
     src/core/ForgeSystem.cpp
+    src/platform/Environment.cpp
     src/project/ProjectManager.cpp
     src/scene/Scene.cpp
     src/assets/AssetDatabase.cpp

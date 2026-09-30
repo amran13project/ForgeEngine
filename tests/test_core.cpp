@@ -22,6 +22,7 @@
 #include "accessibility/AccessibilitySettings.h"
 #include "account/AccountService.h"
 #include "account/AccountPolicy.h"
+#include "platform/Environment.h"
 #include "ai_platform/AIOrchestrator.h"
 #include <cassert>
 #include <filesystem>
@@ -48,9 +49,9 @@ int main(){
     publish::StoreProfile sp; sp.appName="Test Game"; sp.publisher="Forge"; sp.description="Test"; sp.packageId="com.forge.test"; auto vp=publish::PublishCenter().validate(sp,p.root); assert(!vp.artifactDirectory.empty()); auto cr=compliance::ComplianceChecker().scan(sp,p.root); assert(cr.ready());
     auto langs=localization::LocalizationManager::supportedLanguages(); assert(langs.size()>=5); security::SecurityCenter().scan(p.root); workspace::WorkspaceProfile ws; assert(ws.name()=="Creator"); accessibility::AccessibilitySettings acc; assert(acc.subtitles); release::ReleaseRecord rr; rr.version="1.0.0"; assert(release::ReleaseManager().writeManifest(p.root,rr,err));
     {
-        const auto home = root / "AccountHome"; std::filesystem::create_directories(home); const char* oldHome=std::getenv("HOME"); std::string oldHomeValue=oldHome?oldHome:""; setenv("HOME",home.string().c_str(),1);
+        const auto home = root / "AccountHome"; std::filesystem::create_directories(home); const std::string oldHomeValue=platform::getEnvironmentVariable("HOME"); const bool hadHome=!oldHomeValue.empty(); assert(platform::setEnvironmentVariable("HOME",home.string()));
         account::AccountService acct; assert(acct.load(err)); account::AccountProfile ap; ap.displayName="Creator"; ap.email="creator@forge.test"; ap.dateOfBirth="01/01/2000"; ap.country="Malaysia"; ap.timezone="Local"; ap.language="English"; assert(acct.signUp(ap,"password123",err)); account::AccountService acct2; assert(acct2.load(err)); assert(acct2.logIn("creator@forge.test","password123",err)); assert(!acct2.logIn("creator@forge.test","wrongpass",err));
-        if(oldHome) setenv("HOME",oldHomeValue.c_str(),1); else unsetenv("HOME");
+        if(hadHome) assert(platform::setEnvironmentVariable("HOME",oldHomeValue)); else assert(platform::unsetEnvironmentVariable("HOME"));
     }
     {
         assert(account::AccountPolicy::isValidDateOfBirth("01/01/2000"));

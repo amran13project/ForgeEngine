@@ -1,5 +1,5 @@
 #include "account/AccountService.h"
-#include <cstdlib>
+#include "platform/Environment.h"
 #include <fstream>
 #include <iomanip>
 #include <sstream>
@@ -11,9 +11,11 @@ namespace forge::account {
 
 static std::filesystem::path dataDirectory() {
 #ifdef _WIN32
-    if (const char* app = std::getenv("APPDATA")) return std::filesystem::path(app) / "ForgeEngine";
+    const auto app = platform::getEnvironmentVariable("APPDATA");
+    if (!app.empty()) return std::filesystem::path(app) / "ForgeEngine";
 #endif
-    if (const char* home = std::getenv("HOME")) return std::filesystem::path(home) / ".forgeengine";
+    const auto home = platform::getEnvironmentVariable("HOME");
+    if (!home.empty()) return std::filesystem::path(home) / ".forgeengine";
     return std::filesystem::current_path() / ".forgeengine";
 }
 
