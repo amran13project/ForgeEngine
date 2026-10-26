@@ -24,6 +24,6 @@ int main(){
   scene::Scene scene; auto &e=scene.addCube(); e.position={2,3,4}; e.scale={2,1,1}; e.visible=false; e.locked=true; e.selected=true;
   auto dir=std::filesystem::temp_directory_path()/"ForgeFullSystems"; std::error_code ec; std::filesystem::remove_all(dir,ec); std::filesystem::create_directories(dir);
   [[maybe_unused]] prefab::PrefabStore pref; std::string err; auto pf=dir/"Player.prefab"; assert(pref.save(e,pf,err)); scene::Entity loaded; assert(pref.load(loaded,pf,err)); assert(loaded.name=="Cube" && loaded.position.x==2 && loaded.scale.x==2);
-  hotreload::Watcher w; auto watched=dir/"watch.txt"; {std::ofstream o(watched);o<<"a";} assert(!w.changed(watched)); {std::ofstream o(watched);o<<"b";} assert(w.changed(watched));
+  hotreload::Watcher w; auto watched=dir/"watch.txt"; {std::ofstream o(watched);o<<"a";} assert(!w.changed(watched)); const auto initialWriteTime=std::filesystem::last_write_time(watched); {std::ofstream o(watched);o<<"b";} std::filesystem::last_write_time(watched,initialWriteTime+std::chrono::seconds(2)); assert(w.changed(watched));
   std::filesystem::remove_all(dir,ec); std::cout<<"ForgeFullSystemsTests: ALL PASS\n"; return 0;
 }
