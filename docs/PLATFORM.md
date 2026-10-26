@@ -1,10 +1,10 @@
-# Forge Engine Professional 3.0 Platform Foundation
+# Forge Engine platform boundaries
 
-This release extends the native engine with account, birthday, AI orchestration, publishing, compliance, localization, accessibility, security, release and workspace foundations.
+The current native application targets Windows and Linux/X11 development environments. Windows x64 is the first CI target. These are source/build targets, not a guarantee of release-ready support until CI and platform runtime checks pass.
 
-The local account provider is intentionally offline-first. A production hosted authentication service can implement the same account boundary without exposing passwords to Forge AI.
+The editor does not require an account and does not make network requests. Account and AI code retained from earlier repository work is not part of the active editor workflow.
 
-Store adapters are validation/planning foundations. Actual platform submission still requires the user's developer account, platform credentials and platform-side approval.
+The publishing module validates local metadata and can write a submission manifest. It does not upload a build or submit to a store. External signing, credentials, platform approval, and a real executable export are not implemented.
 
 ## Environment abstraction
 

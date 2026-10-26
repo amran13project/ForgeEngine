@@ -1,6 +1,8 @@
-# Forge Engine 3.0 validation
+# Historical validation report
 
-Validated on the development environment:
+> This report describes a previous repository state. It is not evidence that the current branch or current changes build and pass tests.
+
+Previous development-environment results:
 
 - CMake configure: PASS
 - ForgeEngine native editor build: PASS

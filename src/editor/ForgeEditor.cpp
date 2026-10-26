@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 using forge::platform::InputEvent;
@@ -19,11 +20,6 @@ ForgeEditor::ForgeEditor(platform::NativeWindow& w, core::ForgeSystem& s)
     : window_(w), system_(s), projectLocation_(project::ProjectManager::defaultProjectsDirectory().string()) {
     window_.setEventHandler([this](const InputEvent& e) { onEvent(e); });
     window_.setPaintHandler([this](int w, int h) { paint(w, h); });
-    std::string accountError; account_.load(accountError);
-    authEmail_ = account_.profile().email;
-    authDisplay_ = account_.profile().displayName;
-    screen_ = account_.hasStoredAccount() ? ForgeScreen::Login : ForgeScreen::Signup;
-    network_.configure(60, 8, 2);
     tests_.add("Engine System Registry", [this] { return system_.isReady("Renderer") && system_.isReady("Asset Database"); });
 }
 
@@ -58,7 +54,7 @@ void ForgeEditor::paintAuth(bool signup) {
     window_.drawRect(0,0,W,H,C(0x080C11),true);
     window_.drawRect(0,0,W,72,C(0x101821),true);
     window_.drawText(34,45,"FORGE ENGINE",C(0xF4F7FA),24);
-    window_.drawText(W-250,43,"PROFESSIONAL EDITION",C(0x687A8D),11);
+    window_.drawText(W-250,43,"NATIVE C++20 ALPHA",C(0x687A8D),11);
     const int cw=std::min(560,W-80), x=(W-cw)/2;
     drawPanel(x,110,cw,signup?520:390,C(0x111922),C(0x2E3B48));
     window_.drawText(x+34,150,signup?"Create your Forge Account":"Welcome back",C(0xEAF0F5),24);
@@ -85,14 +81,14 @@ void ForgeEditor::paintHub() {
     window_.drawRect(0, 0, W, H, C(0x0B0F14), true);
     window_.drawRect(0, 0, W, 64, C(0x111821), true);
     window_.drawText(30, 37, "FORGE ENGINE", C(0xF6F9FC), 24);
-    window_.drawText(205, 35, "PROFESSIONAL", C(0x6F88A0), 13);
+    window_.drawText(205, 35, "NATIVE C++20 ALPHA", C(0x6F88A0), 13);
     window_.drawText(30, 95, "Forge Hub", C(0xDCE5EE), 22);
-    window_.drawText(W-360, 96, "Account: " + (account_.profile().displayName.empty()?account_.profile().email:account_.profile().displayName), C(0x8092A4), 11);
+    window_.drawText(W-300, 96, "Local workspace · no account required", C(0x8092A4), 11);
     window_.drawText(30, 122, "Create, open and manage local game projects.", C(0x8190A1), 14);
 
     drawPanel(30, 150, std::min(760, W - 60), 140, C(0x121A22), C(0x2C3946));
     window_.drawText(52, 185, "START A NEW PROJECT", C(0xDDE7F0), 16);
-    window_.drawText(52, 214, "Professional 2D/3D workspace with a real local project format.", C(0x7F8E9F), 13);
+    window_.drawText(52, 214, "Create a local 3D scene project with a portable JSON manifest.", C(0x7F8E9F), 13);
     drawButton(52, 238, 175, 38, "+  Create Project", true);
     drawButton(239, 238, 145, 38, "Open Project");
 
@@ -112,8 +108,7 @@ void ForgeEditor::paintHub() {
             y += 72;
         }
     }
-    std::string today; if (account_.birthdayToday(today)) { drawPanel(30,H-70,std::min(560,W-60),34,C(0x1B2630),C(0x405A6D)); window_.drawText(42,H-48,"Happy Birthday, " + (account_.profile().displayName.empty()?account_.profile().email:account_.profile().displayName) + "!  " + today,C(0xD8E9F6),12); }
-    window_.drawText(30, H - 20, "Local-first  |  Native C++20  |  AI + Build + Publish", C(0x526174), 11);
+    window_.drawText(30, H - 20, "Local-first  |  Native C++20  |  No network services", C(0x526174), 11);
 }
 
 void ForgeEditor::paintCreate() {
@@ -133,13 +128,11 @@ void ForgeEditor::paintCreate() {
     drawPanel(66, 270, cw - 52, 42, activeField_ == 1 ? C(0x1D2A36) : C(0x171F28), C(0x3A4A59));
     window_.drawText(80, 297, projectLocation_ + (activeField_ == 1 ? "|" : ""), C(0xF1F5F8), 13);
 
-    window_.drawText(66, 344, "Template", C(0xDDE7EF), 14);
-    drawButton(66, 357, 120, 38, "3D", true); drawButton(195, 357, 120, 38, "2D"); drawButton(324, 357, 120, 38, "Empty"); drawButton(453, 357, 135, 38, "Multiplayer");
+    window_.drawText(66, 344, "Scene template", C(0xDDE7EF), 14);
+    window_.drawText(66, 378, "3D Starter · currently the only implemented template", C(0xA9B7C4), 12);
 
-    window_.drawText(66, 431, "Target", C(0xDDE7EF), 14);
-    window_.drawText(66, 456, "Windows", C(0xD5DEE7), 13);
-    window_.drawText(180, 456, "Linux", C(0xD5DEE7), 13);
-    window_.drawText(280, 456, "Android", C(0xD5DEE7), 13);
+    window_.drawText(66, 431, "Editor platforms", C(0xDDE7EF), 14);
+    window_.drawText(66, 456, "Windows x64 · Linux/X11 (development builds)", C(0xD5DEE7), 12);
 
     drawButton(66, 500, 120, 38, "Cancel");
     drawButton(198, 500, 170, 38, "Create Project", true);
@@ -171,11 +164,10 @@ void ForgeEditor::paintEditor() {
     window_.drawText(18, 34, "FORGE", C(0xFFFFFF), 19);
     drawButton(88, 10, 70, 32, playing_ ? "■ Stop" : "▶ Play", playing_);
     drawButton(164, 10, 66, 32, "Save");
-    drawButton(236, 10, 72, 32, "Build");
+    drawButton(236, 10, 72, 32, "Package");
     drawButton(316, 10, 74, 32, "Doctor");
-    drawButton(398, 10, 58, 32, "AI");
-    drawButton(464, 10, 62, 32, "Tests");
-    drawButton(532, 10, 82, 32, "Publish");
+    drawButton(398, 10, 62, 32, "Tests");
+    drawButton(468, 10, 82, 32, "Publish");
     window_.drawText(std::max(550, W - 370), 33, project_.name.empty() ? "No Project" : project_.name, C(0x91A2B5), 13);
 
     // Scene tree
@@ -196,7 +188,7 @@ void ForgeEditor::paintEditor() {
     window_.drawRect(centerX, top, centerW, 34, C(0x0E141B), true);
     window_.drawText(centerX + 14, top + 23, playing_ ? "GAME" : "SCENE", C(0xC9D5DF), 12);
     window_.drawText(centerX + 74, top + 23, "3D", C(0x6D8194), 12);
-    window_.drawText(centerX + centerW - 165, top + 23, "Perspective", C(0x6D8194), 11);
+    window_.drawText(centerX + centerW - 225, top + 23, "Software wireframe preview", C(0x6D8194), 11);
     const int vy = top + 34;
     const int vh = contentBottom - vy;
     const int cx = centerX + centerW / 2;
@@ -228,7 +220,7 @@ void ForgeEditor::paintEditor() {
     window_.drawLine(rightX + 12, top + 38, rightX + rightW - 12, top + 38, C(0x273440));
     if (e) {
         window_.drawText(rightX + 16, top + 66, e->name, C(0xF1F5F8), 16);
-        window_.drawText(rightX + 16, top + 90, "Entity / Transform", C(0x74869A), 11);
+            window_.drawText(rightX + 16, top + 90, "Entity / Transform · read-only", C(0x74869A), 11);
         window_.drawText(rightX + 16, top + 125, "TRANSFORM", C(0x93A5B6), 11);
         auto field = [&](int yy, const char* label, float value) {
             window_.drawText(rightX + 16, yy + 20, label, C(0x788A9B), 11);
@@ -246,46 +238,32 @@ void ForgeEditor::paintEditor() {
 
     // Bottom workspace
     const int tabY = contentBottom;
-    const char* tabs[] = {"Console", "Assets", "Debugger", "Profiler", "Network", "AI", "Security"};
+    const char* tabs[] = {"Console", "Assets", "Diagnostics", "Security"};
     int tx = 14;
-    for (int i = 0; i < 7; ++i) {
+    for (int i = 0; i < 4; ++i) {
         const bool selected = (panel_ == Panel::Scene && i == 0) ||
                               (panel_ == Panel::Assets && i == 1) ||
-                              (panel_ == Panel::Profiler && i == 3) ||
-                              (panel_ == Panel::Network && i == 4) ||
-                              (panel_ == Panel::AI && i == 5) ||
-                              ((panel_ == Panel::Build || panel_ == Panel::Tests || panel_ == Panel::Doctor || panel_ == Panel::Systems) && i == 2);
+                              ((panel_ == Panel::Build || panel_ == Panel::Tests || panel_ == Panel::Doctor || panel_ == Panel::Systems) && i == 2) ||
+                              (panel_ == Panel::Security && i == 3);
         drawButton(tx, tabY + 10, 92, 28, tabs[i], selected); tx += 98;
     }
     if (panel_ == Panel::Assets) {
         window_.drawText(18, tabY + 58, "Indexed assets", C(0xA5B2BF), 12);
         window_.drawText(120, tabY + 58, std::to_string(assets_.assets().size()), C(0xE1E8EE), 12);
-    } else if (panel_ == Panel::Profiler) {
-        window_.drawText(18, tabY + 58, "Frame", C(0x8091A3), 11);
-        window_.drawText(66, tabY + 58, std::to_string(profiler_.frameMs()) + " ms", C(0xDCE5EC), 12);
-        window_.drawText(150, tabY + 58, "FPS", C(0x8091A3), 11);
-        window_.drawText(182, tabY + 58, std::to_string(profiler_.fps()), C(0xDCE5EC), 12);
-    } else if (panel_ == Panel::Network) {
-        window_.drawText(18, tabY + 58, "Latency 60 ms   Jitter 8 ms   Loss 2%", C(0xAAB7C4), 12);
-    } else if (panel_ == Panel::AI) {
-        window_.drawText(18, tabY + 58, "Forge AI", C(0xAAB7C4), 12);
-        window_.drawText(90, tabY + 58, "Offline provider · project-aware foundation", C(0x76889A), 11);
     } else if (panel_ == Panel::Security) {
         auto sr=security_.scan(project_.root); window_.drawText(18,tabY+58,sr.message,sr.secretsDetected?C(0xD59885):C(0x9DB2C0),11);
     } else {
         window_.drawText(18, tabY + 58, log_, C(0x9DADBD), 12);
-        window_.drawText(18, tabY + 82, "F5 Play   Ctrl+S Save   F6 Build   F7 Doctor   F8 AI   F9 Tests   F10 Systems", C(0x526376), 11);
+        window_.drawText(18, tabY + 82, "F5 Play   Ctrl+S Save   F6 Package   F7 Doctor   F9 Tests   F10 Publish", C(0x526376), 11);
     }
 
-    window_.drawText(12, H - 8, "FORGE ENGINE PROFESSIONAL 3.1  ·  Native Editor  ·  Local-first", C(0x4B5A6A), 10);
+    window_.drawText(12, H - 8, "FORGE ENGINE 3.2.0  ·  Native Editor  ·  Local-first", C(0x4B5A6A), 10);
     window_.drawText(W - 170, H - 8, playing_ ? "PLAY MODE" : "EDITOR READY", playing_ ? C(0x7BC39B) : C(0x6B7E91), 10);
 }
 
 void ForgeEditor::beginPlay() {
     if (playing_ || project_.root.empty()) return;
-    playStartPositions_.clear();
-    playStartPositions_.reserve(scene_.entities().size());
-    for (const auto& entity : scene_.entities()) playStartPositions_.push_back(entity.position);
+    playStartScene_ = scene_;
     physics_.clear();
     for (const auto& entity : scene_.entities()) {
         if (entity.type == "Mesh") {
@@ -301,10 +279,9 @@ void ForgeEditor::beginPlay() {
 
 void ForgeEditor::stopPlay() {
     if (!playing_) return;
-    const auto count = std::min(playStartPositions_.size(), scene_.entities().size());
-    for (size_t i = 0; i < count; ++i) scene_.entities()[i].position = playStartPositions_[i];
+    scene_ = playStartScene_;
     physics_.clear();
-    playStartPositions_.clear();
+    playStartScene_.clear();
     playing_ = false;
     paused_ = false;
     playTime_ = 0.0;
@@ -333,7 +310,7 @@ void ForgeEditor::tickPlay() {
 
 void ForgeEditor::runPublish() {
     publishProfile_.appName = project_.name;
-    publishProfile_.publisher = account_.profile().displayName.empty()?"Forge Creator":account_.profile().displayName;
+    publishProfile_.publisher = "Forge Creator";
     if(publishProfile_.packageId.empty()) publishProfile_.packageId="com.forge."+project_.id.substr(0,8);
     auto plan=publisher_.validate(publishProfile_,project_.root);
     size_t errors=0; for(const auto& i:plan.issues) if(i.error) ++errors;
@@ -349,40 +326,67 @@ void ForgeEditor::submitSignup() {
     if(account_.signUp(p,authPassword_,e)){screen_=ForgeScreen::Hub;authPassword_.clear();std::string d;if(account_.birthdayToday(d))setStatus("[ACCOUNT] "+account::AccountPolicy::birthdayGreeting(account_.profile().displayName));else setStatus("[ACCOUNT] Account created");}
     else setStatus("[ACCOUNT] ERROR - "+e);
 }
-void ForgeEditor::paintPublish() { const int W=window_.width(),H=window_.height(); window_.drawRect(0,0,W,H,C(0x0B0F14),true); window_.drawRect(0,0,W,60,C(0x121922),true); window_.drawText(28,38,"FORGE PUBLISH CENTER",C(0xF2F6FA),22); const int x=42,cw=std::min(900,W-84); drawPanel(x,88,cw,H-140,C(0x111922),C(0x2B3845)); window_.drawText(x+24,124,"DESTINATION",C(0x9DB0C0),11); publish::Store stores[]={publish::Store::GooglePlay,publish::Store::AppleAppStore,publish::Store::MicrosoftStore,publish::Store::Steam,publish::Store::Direct}; int bx=x+24; for(int i=0;i<5;++i){drawButton(bx,140,142,34,publish::PublishCenter::storeName(stores[i]),publishProfile_.store==stores[i]);bx+=150;} auto field=[&](int yy,const char* label,const std::string& value){window_.drawText(x+24,yy,label,C(0xAEBCC8),11);drawPanel(x+24,yy+9,cw-48,38,C(0x171F28),C(0x30404C));window_.drawText(x+38,yy+34,value,C(0xE9EFF3),12);}; field(198,"App Name",publishProfile_.appName); field(252,"Publisher",publishProfile_.publisher); field(306,"Package / Bundle ID",publishProfile_.packageId); field(360,"Version",publishProfile_.version); field(414,"Privacy Policy URL",publishProfile_.privacyUrl.empty()?"<not configured>":publishProfile_.privacyUrl); auto plan=publisher_.validate(publishProfile_,project_.root); int yy=476; window_.drawText(x+24,yy,"VALIDATION",C(0x9DB0C0),11); for(size_t i=0;i<std::min<size_t>(6,plan.issues.size());++i){window_.drawText(x+24,yy+28+static_cast<int>(i)*24,(plan.issues[i].error?"ERROR  ":"WARN   ")+plan.issues[i].field+" - "+plan.issues[i].message,plan.issues[i].error?C(0xD59885):C(0xA6B7C4),10);} drawButton(x+24,H-102,100,36,"Back"); drawButton(x+138,H-102,150,36,"Validate",true); drawButton(x+300,H-102,120,36,"Build"); drawButton(x+432,H-102,120,36,"Upload"); window_.drawText(x+570,H-80,"Upload requires a connected developer account and platform approval.",C(0x637588),10); }
+void ForgeEditor::paintPublish() { const int W=window_.width(),H=window_.height(); window_.drawRect(0,0,W,H,C(0x0B0F14),true); window_.drawRect(0,0,W,60,C(0x121922),true); window_.drawText(28,38,"FORGE PUBLISH CENTER",C(0xF2F6FA),22); const int x=42,cw=std::min(900,W-84); drawPanel(x,88,cw,H-140,C(0x111922),C(0x2B3845)); window_.drawText(x+24,124,"DESTINATION",C(0x9DB0C0),11); publish::Store stores[]={publish::Store::GooglePlay,publish::Store::AppleAppStore,publish::Store::MicrosoftStore,publish::Store::Steam,publish::Store::Direct}; int bx=x+24; for(int i=0;i<5;++i){drawButton(bx,140,142,34,publish::PublishCenter::storeName(stores[i]),publishProfile_.store==stores[i]);bx+=150;} auto field=[&](int yy,const char* label,const std::string& value){window_.drawText(x+24,yy,label,C(0xAEBCC8),11);drawPanel(x+24,yy+9,cw-48,38,C(0x171F28),C(0x30404C));window_.drawText(x+38,yy+34,value,C(0xE9EFF3),12);}; field(198,"App Name",publishProfile_.appName); field(252,"Publisher",publishProfile_.publisher); field(306,"Package / Bundle ID",publishProfile_.packageId); field(360,"Version",publishProfile_.version); field(414,"Privacy Policy URL",publishProfile_.privacyUrl.empty()?"<not configured>":publishProfile_.privacyUrl); auto plan=publisher_.validate(publishProfile_,project_.root); int yy=476; window_.drawText(x+24,yy,"VALIDATION",C(0x9DB0C0),11); for(size_t i=0;i<std::min<size_t>(6,plan.issues.size());++i){window_.drawText(x+24,yy+28+static_cast<int>(i)*24,(plan.issues[i].error?"ERROR  ":"WARN   ")+plan.issues[i].field+" - "+plan.issues[i].message,plan.issues[i].error?C(0xD59885):C(0xA6B7C4),10);} drawButton(x+24,H-102,100,36,"Back"); drawButton(x+138,H-102,150,36,"Validate",true); drawButton(x+300,H-102,120,36,"Package"); drawButton(x+432,H-102,120,36,"Upload"); window_.drawText(x+570,H-80,"Upload requires external credentials and platform approval.",C(0x637588),10); }
 
 void ForgeEditor::createProject() {
     project::ProjectInfo p; std::string e; project::ProjectManager pm;
     auto base = std::filesystem::path(projectLocation_);
     if (!pm.createProject(projectName_, base, "3D", p, e)) { setStatus("[PROJECT] ERROR — " + e); return; }
-    project_ = p; forgeAI_.setProject(project_.root); std::string se;
-    if (!scene_.load(project_.root / project_.defaultScene, se)) { setStatus("[SCENE] ERROR — " + se); return; }
-    assets_.scan(project_.root / "Assets", se); screen_ = ForgeScreen::Editor; panel_ = Panel::Scene;
+    std::string se;
+    if (!scene_.load(p.root / p.defaultScene, se)) { setStatus("[SCENE] ERROR — " + se); return; }
+    if (!assets_.scan(p.root / "Assets", se)) { setStatus("[ASSETS] ERROR — " + se); return; }
+    project_ = p; screen_ = ForgeScreen::Editor; panel_ = Panel::Scene;
     if (!scene_.entities().empty()) scene_.select(scene_.entities().front().id);
     setStatus("[PROJECT] Created real project · ready for editing");
 }
 
 void ForgeEditor::openProject() {
-    std::string e; auto ps = project::ProjectManager().discoverProjects(project::ProjectManager::defaultProjectsDirectory());
+    std::string e;
+    auto ps = project::ProjectManager().discoverProjects(project::ProjectManager::defaultProjectsDirectory());
     if (ps.empty()) { setStatus("[HUB] No projects found"); return; }
-    project_ = ps.front(); forgeAI_.setProject(project_.root); std::string se; scene_.load(project_.root / project_.defaultScene, se); assets_.scan(project_.root / "Assets", se);
-    screen_ = ForgeScreen::Editor; panel_ = Panel::Scene; if (!scene_.entities().empty()) scene_.select(scene_.entities().front().id);
+    auto candidate = ps.front();
+    scene::Scene loadedScene;
+    if (!loadedScene.load(candidate.root / candidate.defaultScene, e)) {
+        setStatus("[SCENE] ERROR — " + e);
+        return;
+    }
+    assets::AssetDatabase loadedAssets;
+    if (!loadedAssets.scan(candidate.root / "Assets", e)) {
+        setStatus("[ASSETS] ERROR — " + e);
+        return;
+    }
+    project_ = std::move(candidate);
+    scene_ = std::move(loadedScene);
+    assets_ = std::move(loadedAssets);
+    screen_ = ForgeScreen::Editor;
+    panel_ = Panel::Scene;
+    if (!scene_.entities().empty()) scene_.select(scene_.entities().front().id);
     setStatus("[PROJECT] Opened " + project_.root.string());
 }
 
 void ForgeEditor::saveScene() { std::string e; if (scene_.save(project_.root / project_.defaultScene, e)) setStatus("[SCENE] Saved"); else setStatus("[SCENE] ERROR — " + e); }
-void ForgeEditor::runBuild() { auto out = project_.root / "Builds" / "Development"; auto r = build::BuildCenter().build(project_.root, out, "Development"); setStatus(r.success ? "[BUILD] Success · " + std::to_string(r.files) + " files" : "[BUILD] ERROR — " + r.message); panel_ = Panel::Build; }
-void ForgeEditor::runDoctor() { panel_ = Panel::Doctor; setStatus("[DOCTOR] Diagnostic scan ready"); }
-void ForgeEditor::runAI() {
-    panel_ = Panel::AI;
-    const auto snapshot = aiOrchestrator_.inspect(project_.root);
-    const auto tasks = aiOrchestrator_.plan(aiplatform::Mode::Review, "review current project", snapshot);
-    const auto response = forgeAI_.ask(aiplatform::Mode::Review, "review current project");
-    setStatus("[AI] " + std::to_string(snapshot.files) + " files · " + std::to_string(tasks.size()) + " planned steps · " + response.plan.summary);
+void ForgeEditor::runBuild() { auto out = project_.root / "Builds" / "Development"; auto r = build::BuildCenter().build(project_.root, out, "Development"); setStatus(r.success ? "[PACKAGE] Project files copied · " + std::to_string(r.files) + " files (no executable built)" : "[PACKAGE] ERROR — " + r.message); panel_ = Panel::Build; }
+void ForgeEditor::runDoctor() {
+    const auto issues = doctor_.scan(project_.root);
+    const auto errors = std::count_if(issues.begin(), issues.end(),
+        [](const doctor::Issue& issue) { return issue.severity == doctor::Severity::Error; });
+    const auto warnings = std::count_if(issues.begin(), issues.end(),
+        [](const doctor::Issue& issue) { return issue.severity == doctor::Severity::Warning; });
+    panel_ = Panel::Doctor;
+    setStatus("[DOCTOR] " + std::to_string(errors) + " error(s), " +
+              std::to_string(warnings) + " warning(s)");
 }
 void ForgeEditor::runTests() { auto r = tests_.run(); size_t pass = 0; for (auto& t : r) if (t.passed) ++pass; panel_ = Panel::Tests; setStatus("[TEST] " + std::to_string(pass) + "/" + std::to_string(r.size()) + " passed"); }
 void ForgeEditor::takeSnapshot() { std::string e; auto p = recovery_.snapshot(project_.root, "editor", e); setStatus(p.empty() ? "[RECOVERY] ERROR — " + e : "[RECOVERY] Snapshot created"); }
-void ForgeEditor::generateWorld() { worldGen_.generate(scene_, "dark forest village"); saveScene(); setStatus("[WORLD] Editable procedural scene baseline generated"); }
+void ForgeEditor::generateWorld() {
+    worldGen_.generate(scene_, "dark forest village");
+    std::string error;
+    if (scene_.save(project_.root / project_.defaultScene, error)) {
+        setStatus("[WORLD] Generated scene and saved changes");
+    } else {
+        setStatus("[WORLD] Generated scene but failed to save: " + error);
+    }
+}
 
 void ForgeEditor::handleHubClick(int x, int y) {
     if (y > 228 && y < 286 && x < 230) { screen_ = ForgeScreen::CreateProject; activeField_ = 0; setStatus("[HUB] Ready"); }
@@ -402,7 +406,7 @@ void ForgeEditor::handleEditorClick(int x, int y) {
     const int leftW = std::clamp(W / 6, 220, 270), rightW = std::clamp(W / 5, 290, 340), centerW = std::max(300, W - leftW - rightW), rightX = leftW + centerW;
     if (y < top) {
         if (x > 80 && x < 160) { if (playing_) stopPlay(); else beginPlay(); }
-        else if (x >= 160 && x < 232) saveScene(); else if (x >= 232 && x < 312) runBuild(); else if (x >= 312 && x < 394) runDoctor(); else if (x >= 394 && x < 462) runAI(); else if (x >= 462 && x < 532) runTests(); else if (x >= 532 && x < 620) runPublish();
+        else if (x >= 160 && x < 232) saveScene(); else if (x >= 232 && x < 312) runBuild(); else if (x >= 312 && x < 394) runDoctor(); else if (x >= 394 && x < 462) runTests(); else if (x >= 468 && x < 550) runPublish();
         return;
     }
     if (x < leftW) {
@@ -413,7 +417,10 @@ void ForgeEditor::handleEditorClick(int x, int y) {
         if (y > top + 360 && scene_.selected()) { scene_.removeSelected(); setStatus("[SCENE] Deleted selected entity"); }
     } else if (y >= contentBottom) {
         const int tab = (x - 14) / 96;
-        if (tab == 1) panel_ = Panel::Assets; else if (tab == 3) panel_ = Panel::Profiler; else if (tab == 4) panel_ = Panel::Network; else if (tab == 5) panel_ = Panel::AI; else if (tab == 6) panel_ = Panel::Security; else panel_ = Panel::Scene;
+        if (tab == 1) panel_ = Panel::Assets;
+        else if (tab == 2) runDoctor();
+        else if (tab == 3) panel_ = Panel::Security;
+        else panel_ = Panel::Scene;
     }
 }
 
@@ -425,26 +432,33 @@ void ForgeEditor::handleChar(char32_t ch) {
     window_.invalidate();
 }
 void ForgeEditor::handleAuthClick(int x,int y,bool signup){const int W=window_.width(),cw=std::min(560,W-80),bx=(W-cw)/2;if(signup){if(y>510&&y<560&&x>bx+34&&x<bx+224){submitSignup();return;}if(y>510&&y<560&&x>bx+238&&x<bx+380){screen_=ForgeScreen::Login;authField_=0;return;}int ys[]={210,270,330,390,450};for(int i=0;i<5;++i)if(y>ys[i]&&y<ys[i]+58){authField_=i;return;}}else{if(y>350&&y<400&&x>bx+34&&x<bx+224){submitLogin();return;}if(y>350&&y<400&&x>bx+238&&x<bx+420){screen_=ForgeScreen::Signup;authField_=0;return;}int ys[]={220,280};for(int i=0;i<2;++i)if(y>ys[i]&&y<ys[i]+58){authField_=i;return;}}window_.invalidate();}
-void ForgeEditor::handlePublishClick(int x,int y){const int H=window_.height(),px=42;publish::Store stores[]={publish::Store::GooglePlay,publish::Store::AppleAppStore,publish::Store::MicrosoftStore,publish::Store::Steam,publish::Store::Direct};int bx=px+24;for(int i=0;i<5;++i){if(x>bx&&x<bx+142&&y>140&&y<174){publishProfile_.store=stores[i];runPublish();return;}bx+=150;}if(y>H-110){if(x<142){screen_=ForgeScreen::Editor;return;}if(x<300){runPublish();return;}if(x<430){std::string e;auto r=build::BuildCenter().build(project_.root,project_.root/"Builds"/"Release","Release");setStatus(r.success?"[PUBLISH] Release build created":"[PUBLISH] ERROR - "+r.message);return;}if(x<560){setStatus("[PUBLISH] Upload requires connected platform credentials");return;}}}
+void ForgeEditor::handlePublishClick(int x,int y){const int H=window_.height(),px=42;publish::Store stores[]={publish::Store::GooglePlay,publish::Store::AppleAppStore,publish::Store::MicrosoftStore,publish::Store::Steam,publish::Store::Direct};int bx=px+24;for(int i=0;i<5;++i){if(x>bx&&x<bx+142&&y>140&&y<174){publishProfile_.store=stores[i];runPublish();return;}bx+=150;}if(y>H-110){if(x<142){screen_=ForgeScreen::Editor;return;}if(x<300){runPublish();return;}if(x<430){std::string e;auto r=build::BuildCenter().build(project_.root,project_.root/"Builds"/"Release","Release");setStatus(r.success?"[PUBLISH] Project payload packaged; no executable was built":"[PUBLISH] ERROR - "+r.message);return;}if(x<560){setStatus("[PUBLISH] Upload requires external platform credentials");return;}}}
 
 void ForgeEditor::handleKey(Key k) {
     if(k==Key::Escape){ if(screen_==ForgeScreen::Editor||screen_==ForgeScreen::Publish) screen_=ForgeScreen::Hub; else if(screen_==ForgeScreen::CreateProject) screen_=ForgeScreen::Hub; window_.invalidate(); return; }
     if(screen_==ForgeScreen::Login){ if(k==Key::Tab) authField_=authField_==0?1:0; else if(k==Key::Enter) submitLogin(); window_.invalidate(); return; }
     if(screen_==ForgeScreen::Signup){ if(k==Key::Tab) authField_=(authField_+1)%5; else if(k==Key::Enter) submitSignup(); window_.invalidate(); return; }
     if(screen_==ForgeScreen::CreateProject){ if(k==Key::Tab) activeField_=activeField_==0?1:0; else if(k==Key::Enter) createProject(); window_.invalidate(); return; }
-    if(screen_==ForgeScreen::Publish){ if(k==Key::F6){ std::string e; auto r=build::BuildCenter().build(project_.root,project_.root/"Builds"/"Release","Release"); setStatus(r.success?"[PUBLISH] Release build created":"[PUBLISH] ERROR - "+r.message); } window_.invalidate(); return; }
+    if(screen_==ForgeScreen::Publish){ if(k==Key::F6){ std::string e; auto r=build::BuildCenter().build(project_.root,project_.root/"Builds"/"Release","Release"); setStatus(r.success?"[PUBLISH] Project payload packaged; no executable was built":"[PUBLISH] ERROR - "+r.message); } window_.invalidate(); return; }
     auto* e=scene_.selected(); const float step=0.25f;
     if(k==Key::F5||k==Key::Space){ if (playing_) stopPlay(); else beginPlay(); }
-    else if(k==Key::F6) runBuild(); else if(k==Key::F7) runDoctor(); else if(k==Key::F8) runAI(); else if(k==Key::F9) runTests(); else if(k==Key::F10) runPublish();
+    else if(k==Key::F6) runBuild(); else if(k==Key::F7) runDoctor(); else if(k==Key::F9) runTests(); else if(k==Key::F10) runPublish();
     else if(k==Key::DeleteKey&&e){scene_.removeSelected();setStatus("[SCENE] Deleted selected entity");}
-    else if(e){if(k==Key::Left)e->position.x-=step;else if(k==Key::Right)e->position.x+=step;else if(k==Key::Up)e->position.z-=step;else if(k==Key::Down)e->position.z+=step;else if(k==Key::W)e->position.y+=step;else if(k==Key::S)e->position.y-=step;else if(k==Key::N)panel_=Panel::Network;else if(k==Key::P)panel_=Panel::Profiler;else if(k==Key::A)panel_=Panel::Assets;else if(k==Key::R)takeSnapshot();}
+    else if(e){if(k==Key::Left)e->position.x-=step;else if(k==Key::Right)e->position.x+=step;else if(k==Key::Up)e->position.z-=step;else if(k==Key::Down)e->position.z+=step;else if(k==Key::W)e->position.y+=step;else if(k==Key::S)e->position.y-=step;else if(k==Key::A)panel_=Panel::Assets;else if(k==Key::R)takeSnapshot();}
     window_.invalidate();
 }
 
 void ForgeEditor::onEvent(const InputEvent& e) {
     if (e.type == InputEvent::Type::Close) { window_.requestClose(); return; }
     if (e.type == InputEvent::Type::MouseMove) { mouseX_ = e.x; mouseY_ = e.y; window_.invalidate(); return; }
-    if (e.type == InputEvent::Type::KeyDown) { handleKey(e.key); return; }
+    if (e.type == InputEvent::Type::KeyDown) {
+        if (e.control && e.key == Key::S && screen_ == ForgeScreen::Editor) {
+            saveScene();
+            return;
+        }
+        handleKey(e.key);
+        return;
+    }
     if (e.type == InputEvent::Type::KeyChar) { handleChar(e.character); return; }
     if (e.type == InputEvent::Type::MouseDown && e.mouseButton == MouseButton::Left) {
         if (screen_ == ForgeScreen::Login) handleAuthClick(e.x,e.y,false); else if (screen_ == ForgeScreen::Signup) handleAuthClick(e.x,e.y,true); else if (screen_ == ForgeScreen::Hub) handleHubClick(e.x,e.y); else if (screen_ == ForgeScreen::CreateProject) handleCreateClick(e.x,e.y); else if (screen_ == ForgeScreen::Publish) handlePublishClick(e.x,e.y); else handleEditorClick(e.x,e.y);

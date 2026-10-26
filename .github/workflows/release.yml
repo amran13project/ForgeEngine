@@ -1,0 +1,89 @@
+name: Forge Engine Windows alpha release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  windows-release:
+    name: Build, test, and package Windows x64
+    runs-on: windows-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Configure release build
+        run: cmake -S . -B build -A x64 -DFORGE_BUILD_TESTS=ON
+
+      - name: Build editor, runtime, and tests
+        run: cmake --build build --config Release --parallel 4
+
+      - name: Run CTest before packaging
+        run: ctest --test-dir build -C Release --output-on-failure
+
+      - name: Assemble and checksum distributable
+        shell: pwsh
+        run: |
+          $package = Join-Path $env:RUNNER_TEMP "ForgeEngine"
+          $archiveName = "ForgeEngine-Windows-x64-$env:GITHUB_REF_NAME.zip"
+          $archive = Join-Path $env:RUNNER_TEMP $archiveName
+          $checksumFile = Join-Path $env:RUNNER_TEMP "SHA256SUMS.txt"
+
+          cmake --install build --config Release --prefix $package
+          if ($LASTEXITCODE -ne 0) { throw "CMake install failed: $LASTEXITCODE" }
+
+          Copy-Item README.md, LICENSE.txt, THIRD-PARTY-NOTICES.md, VERSION -Destination $package
+          Copy-Item docs\quick-start.md (Join-Path $package "QUICK-START.md")
+          $docsDestination = Join-Path $package "docs"
+          New-Item -ItemType Directory -Force -Path $docsDestination | Out-Null
+          Copy-Item docs\feature-status.md, docs\build-windows.md, docs\roadmap.md, docs\ai-roadmap.md, docs\architecture.md -Destination $docsDestination
+          $sampleDestination = Join-Path $package "Samples"
+          New-Item -ItemType Directory -Force -Path $sampleDestination | Out-Null
+          Copy-Item samples\ProfessionalStarter3D (Join-Path $sampleDestination "ProfessionalStarter3D") -Recurse
+
+          if (-not (Test-Path (Join-Path $package "bin\ForgeEngine.exe")) -or
+              -not (Test-Path (Join-Path $package "bin\ForgeRuntime.exe"))) {
+            throw "Release package is missing one or more native executables."
+          }
+          Compress-Archive -Path (Join-Path $package "*") -DestinationPath $archive -CompressionLevel Optimal
+          if (-not (Test-Path $archive)) { throw "Release archive was not created." }
+
+          $digest = (Get-FileHash $archive -Algorithm SHA256).Hash.ToLowerInvariant()
+          Set-Content -Path $checksumFile -Value "$digest  $archiveName" -Encoding ascii
+          "FORGE_ARCHIVE=$archive" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "FORGE_CHECKSUM=$checksumFile" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "FORGE_ARCHIVE_NAME=$archiveName" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Publish validated alpha prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          $notes = @"
+          Forge Engine $env:GITHUB_REF_NAME is an early native C++20 alpha.
+
+          This package contains a native editor, standalone runtime, quick-start guide, license notices, and the ProfessionalStarter3D sample. The current viewport is a software wireframe preview. The project package action does not export a standalone game.
+
+          This prerelease was built and passed the repository's Windows Release CTest suite in GitHub Actions. Interactive GUI behavior still requires manual desktop testing.
+
+          SHA-256 is provided in SHA256SUMS.txt.
+          "@
+          $notesFile = Join-Path $env:RUNNER_TEMP "release-notes.md"
+          Set-Content -Path $notesFile -Value $notes -Encoding utf8
+          gh release create $env:GITHUB_REF_NAME $env:FORGE_ARCHIVE $env:FORGE_CHECKSUM `
+            --title "Forge Engine $env:GITHUB_REF_NAME" --notes-file $notesFile --prerelease
+          if ($LASTEXITCODE -ne 0) { throw "GitHub Release creation failed: $LASTEXITCODE" }
+
+          $release = gh release view $env:GITHUB_REF_NAME --json url,isPrerelease,assets
+          if ($LASTEXITCODE -ne 0) { throw "Unable to verify the published release." }
+          $releaseInfo = $release | ConvertFrom-Json
+          if (-not $releaseInfo.isPrerelease -or
+              $releaseInfo.assets.name -notcontains $env:FORGE_ARCHIVE_NAME -or
+              $releaseInfo.assets.name -notcontains "SHA256SUMS.txt") {
+            throw "The published prerelease is missing an expected verified asset."
+          }
+          Write-Host "Verified prerelease URL: $($releaseInfo.url)"

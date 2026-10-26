@@ -1,21 +1,31 @@
-# Forge Engine Professional 3.0 - Creator Guide
+# Forge Engine 3.2.0 - Creator Guide
 
-Forge is intended to let creators go from project creation to build preparation without requiring CMake on Windows.
+Forge Engine is an early native C++20 editor/runtime foundation. See [current feature status](docs/feature-status.md) before relying on a workflow.
 
-## Start
+## Build
 
-Run `Build-ForgeEngine-Windows.cmd` once, then `Run-ForgeEngine.cmd`.
+Install CMake 3.20+, Visual Studio 2022 C++ desktop tools, and the Windows SDK. From PowerShell:
 
-## Account
+```powershell
+cmake -S . -B build -A x64 -DFORGE_BUILD_TESTS=ON
+cmake --build build --config Release --parallel 4
+ctest --test-dir build -C Release --output-on-failure
+```
 
-On first start, create a local Forge account with display name, email, password, date of birth and country/region. A later start uses the local login screen. The birthday feature checks local calendar date.
+The legacy `Build-ForgeEngine-Windows.cmd` can download a compiler archive when no compatible toolchain is present; prefer the documented CMake build when possible.
 
-For a public hosted service, replace the local account provider with a production identity service.
+## Create and run
 
-## Creation
+Launch `.\build\Release\ForgeEngine.exe`. Create a 3D project or put `samples/ProfessionalStarter3D` in the default `ForgeProjects` folder and choose Open Project. The current Open action opens the first discovered project.
 
-Create or open a project, edit the scene, use AI/Doctor/Profiler/Network Lab, save, play and build.
+Select an entity, use arrow keys and W/S to translate it, and press Ctrl+S to save. The Inspector is read-only. Press F5 to start/stop basic play mode. The separate runtime accepts a project path:
 
-## Publishing
+```powershell
+.\build\Release\ForgeRuntime.exe .\samples\ProfessionalStarter3D
+```
 
-Open Publish Center from the editor. Select a destination, validate metadata and create a Release build. Upload/submission requires a connected developer account and platform approval; Forge does not bypass store review.
+The viewport is a software wireframe preview. The Package command copies project content only; it does not build a game executable.
+
+## Not available
+
+The current editor has no account/login, AI assistant, model/texture importer, GPU renderer, undo/redo, editable inspector, or store upload. Publishing screens validate metadata only. See the [roadmap](docs/roadmap.md) for planned work.

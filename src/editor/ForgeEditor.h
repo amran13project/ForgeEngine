@@ -46,11 +46,11 @@ private:
     void handleHubClick(int,int); void handleCreateClick(int,int); void handleEditorClick(int,int); void handlePublishClick(int,int); void handleAuthClick(int,int,bool); void handleChar(char32_t); void handleKey(platform::Key);
     void setStatus(const std::string&);
     platform::NativeWindow& window_; core::ForgeSystem& system_;
-    ForgeScreen screen_{ForgeScreen::Login}; Panel panel_{Panel::Scene};
+    ForgeScreen screen_{ForgeScreen::Hub}; Panel panel_{Panel::Scene};
     project::ProjectInfo project_{}; scene::Scene scene_{}; assets::AssetDatabase assets_{}; physics::PhysicsWorld physics_{};
     profiler::Profiler profiler_{}; network::NetworkLab network_{}; renderer::SoftwareRenderer renderer_{}; doctor::ProjectDoctor doctor_{}; recovery::Recovery recovery_{}; plugins::PluginManager* pluginsPtr_{nullptr}; testing::TestingCenter tests_{}; ai::RuleAIProvider aiProvider_{}; world::WorldGenerator worldGen_{};
     account::AccountService account_{}; aiplatform::ForgeAI forgeAI_{}; aiplatform::AIOrchestrator aiOrchestrator_{}; publish::PublishCenter publisher_{}; compliance::ComplianceChecker compliance_{}; localization::LocalizationManager localization_{}; accessibility::AccessibilitySettings accessibility_{}; security::SecurityCenter security_{}; release::ReleaseManager releases_{}; workspace::WorkspaceProfile workspace_{}; publish::StoreProfile publishProfile_{};
-    std::string status_{"Ready"}, log_{"[STARTUP] INFO - Forge Engine Professional platform online"}; std::string projectName_{"MyGame"}, projectLocation_{}; std::string authDisplay_, authEmail_, authPassword_, authDob_, authCountry_{"Malaysia"}; int activeField_{0}; int authField_{0}; bool playing_{false}; bool paused_{false}; double playTime_{0}; int mouseX_{-1}; int mouseY_{-1};
-    std::vector<forge::math::Vec3> playStartPositions_{}; std::chrono::steady_clock::time_point lastPlayTick_{};
+    std::string status_{"Ready"}, log_{"[STARTUP] INFO - Forge Engine native editor ready"}; std::string projectName_{"MyGame"}, projectLocation_{}; std::string authDisplay_, authEmail_, authPassword_, authDob_, authCountry_{"Malaysia"}; int activeField_{0}; int authField_{0}; bool playing_{false}; bool paused_{false}; double playTime_{0}; int mouseX_{-1}; int mouseY_{-1};
+    scene::Scene playStartScene_{}; std::chrono::steady_clock::time_point lastPlayTick_{};
 };
 }

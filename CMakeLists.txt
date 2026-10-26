@@ -1,10 +1,13 @@
 cmake_minimum_required(VERSION 3.20)
-project(ForgeEngineProfessional VERSION 3.2.0 LANGUAGES CXX)
+cmake_policy(SET CMP0091 NEW)
+project(ForgeEngine VERSION 3.2.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 option(FORGE_BUILD_TESTS "Build Forge Engine tests" ON)
+set(FORGE_APP_ICON "" CACHE FILEPATH "Optional user-provided Windows .ico file")
 
 set(FORGE_CORE_SOURCES
     src/core/ForgeSystem.cpp
@@ -57,6 +60,23 @@ add_executable(ForgeRuntime src/runtime_main.cpp ${FORGE_PLATFORM_SOURCES} src/r
 target_link_libraries(ForgeEngine PRIVATE ForgeCore)
 target_link_libraries(ForgeRuntime PRIVATE ForgeCore)
 
+if(FORGE_APP_ICON)
+    if(NOT WIN32)
+        message(FATAL_ERROR "FORGE_APP_ICON is supported only for Windows builds")
+    endif()
+    if(NOT EXISTS "${FORGE_APP_ICON}")
+        message(FATAL_ERROR "FORGE_APP_ICON does not exist: ${FORGE_APP_ICON}")
+    endif()
+    enable_language(RC)
+    file(TO_CMAKE_PATH "${FORGE_APP_ICON}" FORGE_APP_ICON_RESOURCE)
+    configure_file(assets/branding/forge-icon.rc.in
+                   "${CMAKE_CURRENT_BINARY_DIR}/forge-icon.rc" @ONLY)
+    target_sources(ForgeEngine PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/forge-icon.rc")
+    target_sources(ForgeRuntime PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/forge-icon.rc")
+    target_compile_definitions(ForgeEngine PRIVATE FORGE_HAS_APP_ICON=1)
+    target_compile_definitions(ForgeRuntime PRIVATE FORGE_HAS_APP_ICON=1)
+endif()
+
 foreach(target ForgeEngine ForgeRuntime)
     target_include_directories(${target} PRIVATE src)
     target_compile_definitions(${target} PRIVATE FORGE_ENGINE_VERSION="3.2.0" NOMINMAX WIN32_LEAN_AND_MEAN)
@@ -100,6 +120,16 @@ if(FORGE_BUILD_TESTS)
         target_compile_options(ForgeFullSystemsTests PRIVATE -Wall -Wextra -Wpedantic)
     endif()
     add_test(NAME ForgeFullSystemsTests COMMAND ForgeFullSystemsTests)
+
+    add_executable(ForgeProjectTests tests/test_project.cpp)
+    target_include_directories(ForgeProjectTests PRIVATE src)
+    target_link_libraries(ForgeProjectTests PRIVATE ForgeCore)
+    if(MSVC)
+        target_compile_options(ForgeProjectTests PRIVATE /W4 /permissive- /EHsc)
+    else()
+        target_compile_options(ForgeProjectTests PRIVATE -Wall -Wextra -Wpedantic)
+    endif()
+    add_test(NAME ForgeProjectTests COMMAND ForgeProjectTests)
 
     add_executable(ForgeProfessionalQA tests/test_professional_qa.cpp ${FORGE_CORE_SOURCES})
     target_include_directories(ForgeProfessionalQA PRIVATE src)

@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Build Forge Engine on Windows."><title>Windows Build - Forge Engine Docs</title><link rel="stylesheet" href="../assets/site.css"></head>
+<body><a class="skip-link" href="#main">Skip to content</a><header class="site-header"><div class="header-inner"><a class="brand" href="../index.html">FORGE ENGINE<span>WINDOWS BUILD</span></a><nav aria-label="Main navigation"><a href="../index.html">Home</a><a href="index.html">Docs</a><a href="../tutorials/index.html">Tutorials</a><a href="../downloads.html">Downloads</a></nav></div></header>
+<main id="main" class="content"><p class="eyebrow">Windows x64</p><h1>Configure, build, and test.</h1><p class="lead">Use CMake and an installed C++20 Visual Studio toolchain. No dependency download is required by the CMake build.</p>
+<section class="card"><h2>Prerequisites</h2><ul class="list"><li>Windows 10/11 x64.</li><li>CMake 3.20 or newer.</li><li>Visual Studio 2022 C++ desktop workload and Windows SDK.</li></ul></section>
+<section class="card"><h2>Build and test</h2><pre class="code">cmake -S . -B build -A x64 -DFORGE_BUILD_TESTS=ON
+cmake --build build --config Release --parallel 4
+ctest --test-dir build -C Release --output-on-failure</pre><p>GitHub Actions uses the same configure/build/test commands on a Windows-hosted runner for both Debug and Release.</p></section>
+<section class="card"><h2>Run the editor and sample</h2><pre class="code">.\build\Release\ForgeEngine.exe
+.\build\Release\ForgeRuntime.exe .\samples\ProfessionalStarter3D</pre><p>Both applications need an interactive desktop session. A CI compile/test pass does not verify window rendering or mouse interaction.</p></section>
+<section class="card"><h2>Optional app icon</h2><pre class="code">cmake -S . -B build -A x64 -DFORGE_APP_ICON="assets/branding/forge-engine.ico"</pre><p>Omit the option until the project owner supplies the final icon. See <a href="https://github.com/amran13project/ForgeEngine/blob/main/assets/branding/README.md">icon integration instructions</a>.</p></section>
+<section class="card"><h2>Troubleshooting</h2><p>If the generator is missing, install the Visual Studio C++ workload. The current release workflow has no custom icon dependency. The legacy portable builder can download a large compiler archive and is not the recommended validation path.</p></section></main>
+<footer class="site-footer"><div class="footer-inner"><p>Build instructions do not claim a completed local build.</p><p><a href="index.html">Docs home</a> · <a href="../features.html">Feature status</a></p></div></footer></body></html>

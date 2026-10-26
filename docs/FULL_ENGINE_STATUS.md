@@ -1,4 +1,6 @@
-# Forge Engine — Full Candidate Status
+# Forge Engine — Historical Full Candidate Status
+
+> Historical report for the 2026-09-29 candidate. It predates the current alpha-scope and scene-persistence changes. For current capabilities and validation, see [feature status](feature-status.md) and [initial audit](initial-audit.md).
 
 ## Repository baseline
 
