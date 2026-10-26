@@ -1,9 +1,10 @@
 {
   "template": "3D",
-  "engineVersion": "2.0.0",
+  "engineVersion": "3.2.0",
   "projectVersion": "1.0.0",
   "targetPlatforms": ["Windows", "Linux"],
-  "renderingProfile": "High",
+  "status": "Baseline - Forge Hub currently creates this project shape directly",
+  "renderingProfile": "SoftwareWireframe",
   "physicsProfile": "Default",
   "networking": false
 }

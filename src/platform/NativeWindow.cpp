@@ -139,7 +139,8 @@ static LRESULT CALLBACK wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         case WM_LBUTTONDOWN: { InputEvent e; e.type = InputEvent::Type::MouseDown; e.mouseButton = MouseButton::Left; e.x = GET_X_LPARAM(lParam); e.y = GET_Y_LPARAM(lParam); emit(e); SetCapture(hwnd); return 0; }
         case WM_LBUTTONUP: { InputEvent e; e.type = InputEvent::Type::MouseUp; e.mouseButton = MouseButton::Left; e.x = GET_X_LPARAM(lParam); e.y = GET_Y_LPARAM(lParam); emit(e); ReleaseCapture(); return 0; }
         case WM_MOUSEMOVE: { InputEvent e; e.type = InputEvent::Type::MouseMove; e.x = GET_X_LPARAM(lParam); e.y = GET_Y_LPARAM(lParam); emit(e); return 0; }
-        case WM_KEYDOWN: { InputEvent e; e.type = InputEvent::Type::KeyDown; e.key = mapVk(wParam); emit(e); return 0; }
+        case WM_KEYDOWN: { InputEvent e; e.type = InputEvent::Type::KeyDown; e.key = mapVk(wParam); e.control = (GetKeyState(VK_CONTROL) & 0x8000) != 0; emit(e); return 0; }
+        case WM_KEYUP: { InputEvent e; e.type = InputEvent::Type::KeyUp; e.key = mapVk(wParam); emit(e); return 0; }
         case WM_CHAR: { InputEvent e; e.type = InputEvent::Type::KeyChar; e.character = static_cast<char32_t>(wParam); emit(e); return 0; }
         case WM_PAINT: self->repaint(); return 0;
         default: return DefWindowProcW(hwnd, msg, wParam, lParam);
@@ -193,6 +194,9 @@ bool NativeWindow::create() {
         wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
         wc.hbrBackground = nullptr;
         wc.style = CS_HREDRAW | CS_VREDRAW;
+#ifdef FORGE_HAS_APP_ICON
+        wc.hIcon = LoadIconW(hInst, MAKEINTRESOURCEW(101));
+#endif
         if (!RegisterClassW(&wc)) return false;
         registered = true;
     }
@@ -211,7 +215,7 @@ bool NativeWindow::create() {
     unsigned long bg = WhitePixel(impl_->display, screen); unsigned long fg = BlackPixel(impl_->display, screen);
     impl_->window = XCreateSimpleWindow(impl_->display, RootWindow(impl_->display, screen), 40, 40, width_, height_, 1, fg, bg);
     XStoreName(impl_->display, impl_->window, title_.c_str());
-    XSelectInput(impl_->display, impl_->window, ExposureMask | KeyPressMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask | StructureNotifyMask);
+    XSelectInput(impl_->display, impl_->window, ExposureMask | KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask | StructureNotifyMask);
     impl_->wmDelete = XInternAtom(impl_->display, "WM_DELETE_WINDOW", False); XSetWMProtocols(impl_->display, impl_->window, &impl_->wmDelete, 1);
     impl_->gc = XCreateGC(impl_->display, impl_->window, 0, nullptr); impl_->font = XLoadQueryFont(impl_->display, "fixed");
     XMapWindow(impl_->display, impl_->window); XFlush(impl_->display); return true;
@@ -238,7 +242,7 @@ void NativeWindow::run() {
             else if (ev.type == ConfigureNotify) { width_ = ev.xconfigure.width; height_ = ev.xconfigure.height; InputEvent e; e.type = InputEvent::Type::Resize; e.width = width_; e.height = height_; dispatchEvent(e); }
             else if (ev.type == MotionNotify) { InputEvent e; e.type = InputEvent::Type::MouseMove; e.x = ev.xmotion.x; e.y = ev.xmotion.y; dispatchEvent(e); }
             else if (ev.type == ButtonPress || ev.type == ButtonRelease) { InputEvent e; e.type = (ev.type == ButtonPress) ? InputEvent::Type::MouseDown : InputEvent::Type::MouseUp; e.mouseButton = ev.xbutton.button == Button3 ? MouseButton::Right : (ev.xbutton.button == Button2 ? MouseButton::Middle : MouseButton::Left); e.x = ev.xbutton.x; e.y = ev.xbutton.y; dispatchEvent(e); }
-            else if (ev.type == KeyPress) { KeySym ks = XLookupKeysym(&ev.xkey, 0); InputEvent e; e.type = InputEvent::Type::KeyDown; e.key = mapKeySym(ks); dispatchEvent(e); }
+            else if (ev.type == KeyPress || ev.type == KeyRelease) { KeySym ks = XLookupKeysym(&ev.xkey, 0); InputEvent e; e.type = ev.type == KeyPress ? InputEvent::Type::KeyDown : InputEvent::Type::KeyUp; e.key = mapKeySym(ks); e.control = (ev.xkey.state & ControlMask) != 0; dispatchEvent(e); }
         }
         if (paintHandler_) paintHandler_(width_, height_);
         std::this_thread::sleep_for(std::chrono::milliseconds(16));

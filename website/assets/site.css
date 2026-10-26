@@ -1,0 +1,66 @@
+:root {
+  color-scheme: dark;
+  --bg: #0b0e12;
+  --surface: #121820;
+  --surface-raised: #18212b;
+  --line: #293541;
+  --text: #edf1f4;
+  --muted: #a0adb8;
+  --accent: #e6a04b;
+  --good: #8dc7a2;
+  --planned: #a6b5c3;
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.65; }
+a { color: #f2bc74; text-underline-offset: 0.2em; }
+a:hover { color: #ffd59f; }
+a:focus-visible, button:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+.skip-link { position: absolute; left: -9999px; top: 0; padding: 0.7rem 1rem; background: var(--accent); color: #17120a; z-index: 10; }
+.skip-link:focus { left: 1rem; }
+.site-header { border-bottom: 1px solid var(--line); background: #0d1116; }
+.header-inner, .content, .footer-inner { width: min(1120px, calc(100% - 2.5rem)); margin-inline: auto; }
+.header-inner { min-height: 76px; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; }
+.brand { color: var(--text); text-decoration: none; letter-spacing: 0.1em; font-weight: 800; white-space: nowrap; }
+.brand span { display: block; color: var(--accent); font-size: 0.68rem; letter-spacing: 0.2em; }
+nav { display: flex; flex-wrap: wrap; gap: 0.4rem 1.1rem; }
+nav a { color: var(--muted); text-decoration: none; font-size: 0.92rem; }
+nav a:hover, nav a[aria-current="page"] { color: var(--text); }
+.content { padding-block: 3.5rem 5rem; }
+.eyebrow { color: var(--accent); text-transform: uppercase; letter-spacing: 0.17em; font-size: 0.76rem; font-weight: 700; }
+h1, h2, h3 { line-height: 1.2; letter-spacing: -0.025em; }
+h1 { font-size: clamp(2.25rem, 5vw, 4.4rem); max-width: 900px; margin: 0.4rem 0 1.2rem; }
+h2 { margin-top: 3rem; font-size: clamp(1.45rem, 3vw, 2rem); }
+h3 { font-size: 1.1rem; }
+p, li { color: var(--muted); }
+strong { color: var(--text); }
+.lead { max-width: 760px; font-size: 1.2rem; color: #c2cbd2; }
+.hero { padding: clamp(2rem, 6vw, 5rem); border: 1px solid var(--line); border-radius: 1.2rem; background: radial-gradient(ellipse at 85% 10%, #4b321a 0, transparent 38%), linear-gradient(135deg, #18212a, #10151b 70%); }
+.actions { display: flex; flex-wrap: wrap; gap: 0.8rem; margin-top: 1.7rem; }
+.button { display: inline-block; padding: 0.72rem 1rem; border: 1px solid #a97031; border-radius: 0.45rem; background: #d8923d; color: #17120b; font-weight: 750; text-decoration: none; }
+.button.secondary { border-color: var(--line); background: var(--surface-raised); color: var(--text); }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); gap: 1rem; margin-top: 1.2rem; }
+.card { padding: 1.2rem; border: 1px solid var(--line); border-radius: 0.8rem; background: var(--surface); }
+.card h2, .card h3 { margin-top: 0; }
+.status { display: inline-block; padding: 0.15rem 0.55rem; border: 1px solid #42624d; border-radius: 99px; color: var(--good); font-size: 0.78rem; font-weight: 700; }
+.status.partial { border-color: #655033; color: #f0c47e; }
+.status.planned { border-color: #43505b; color: var(--planned); }
+.notice { margin-block: 1.5rem; padding: 1rem 1.2rem; border-left: 3px solid var(--accent); background: var(--surface); }
+.code { overflow-x: auto; padding: 1rem; border: 1px solid var(--line); border-radius: 0.55rem; background: #080b0e; color: #e0e7ec; font: 0.9rem/1.55 Consolas, "Courier New", monospace; }
+.list { padding-left: 1.25rem; }
+.list li + li { margin-top: 0.45rem; }
+.site-footer { border-top: 1px solid var(--line); background: #0d1116; }
+.footer-inner { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; padding-block: 1.5rem; color: var(--muted); font-size: 0.9rem; }
+.footer-inner p { margin: 0; }
+@media (max-width: 720px) {
+  .header-inner { align-items: flex-start; flex-direction: column; padding-block: 1rem; }
+  nav { gap: 0.5rem 0.9rem; }
+  .content { padding-block: 2rem 3rem; }
+  .hero { padding: 1.5rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}

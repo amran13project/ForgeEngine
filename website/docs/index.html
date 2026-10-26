@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Forge Engine build instructions, project format, editor overview, and limitations.">
+  <title>Documentation - Forge Engine</title><link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header"><div class="header-inner"><a class="brand" href="../index.html">FORGE ENGINE<span>DOCUMENTATION</span></a><nav aria-label="Main navigation"><a href="../index.html">Home</a><a href="../tutorials/index.html">Tutorials</a><a href="../features.html">Features</a><a href="../downloads.html">Downloads</a></nav></div></header>
+  <main id="main" class="content">
+    <p class="eyebrow">Documentation</p><h1>Build, open, and understand Forge Engine.</h1>
+    <p class="lead">The documentation describes the current source, not a future product promise.</p>
+    <section class="card"><h2>Requirements and build</h2>
+      <p>Windows development requires Windows 10/11 x64, CMake 3.20+, Visual Studio 2022 C++ desktop tools and the Windows SDK. Linux development requires a C++20 compiler, CMake 3.20+, and X11 development libraries.</p>
+      <pre class="code">cmake -S . -B build -A x64 -DFORGE_BUILD_TESTS=ON
+cmake --build build --config Release --parallel 4
+ctest --test-dir build -C Release --output-on-failure</pre>
+      <p>See the <a href="build-windows.html">complete Windows build guide</a> and <a href="quick-start.html">quick start</a> for runtime commands and keyboard controls.</p>
+    </section>
+    <section class="card"><h2>Project and scene format</h2>
+      <p>A project has a <code>ForgeProject.json</code> manifest and a project-relative default scene path. Scene version 2 stores entities, IDs, names, types, transforms, visibility, and lock state in JSON. Selection is editor-only and is not persisted. Unsupported versions, malformed fields, duplicate IDs, and non-finite transforms are rejected without replacing the in-memory scene.</p>
+      <p>There is no version-1 migration yet. Back up project files before changing scene data manually.</p>
+    </section>
+    <section class="card"><h2>Editor tour and boundaries</h2>
+      <ul class="list"><li>Forge Hub creates projects and discovers existing projects under the default <code>ForgeProjects</code> folder.</li><li>The scene panel selects entities; keyboard arrows and W/S translate the selection. Inspector values are currently read-only.</li><li>The viewport is a software wireframe preview. It is not a GPU renderer and does not provide lighting or materials.</li><li>The Assets panel indexes and classifies files; it does not import models or textures.</li><li>The Package action copies project content; it does not produce a standalone executable.</li></ul>
+    </section>
+    <section class="card"><h2>Troubleshooting</h2>
+      <p>If a project cannot open, verify that its manifest exists and its default scene uses supported version 2. Windows GUI startup needs an interactive desktop. Linux runtime needs an active X11 display. For current feature boundaries see <a href="../features.html">Features</a> and for known issues see <a href="../faq.html">FAQ and troubleshooting</a>.</p>
+    </section>
+  </main>
+  <footer class="site-footer"><div class="footer-inner"><p>Documentation for the current alpha source.</p><p><a href="../index.html">Home</a> · <a href="../roadmap.html">Roadmap</a> · <a href="../privacy.html">Privacy</a></p></div></footer>
+</body>
+</html>

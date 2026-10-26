@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Forge Engine verified downloads and source build instructions."><title>Downloads - Forge Engine</title><link rel="stylesheet" href="assets/site.css"></head>
+<body><a class="skip-link" href="#main">Skip to content</a><header class="site-header"><div class="header-inner"><a class="brand" href="index.html">FORGE ENGINE<span>DOWNLOADS</span></a><nav aria-label="Main navigation"><a href="index.html">Home</a><a href="docs/index.html">Docs</a><a href="features.html">Features</a><a href="roadmap.html">Roadmap</a></nav></div></header>
+<main id="main" class="content"><p class="eyebrow">Build from source</p><h1>No verified release asset is published yet.</h1><p class="lead">This page does not invent a version number or link to an unverified archive.</p>
+<section class="notice"><strong>Release status:</strong> the repository had no GitHub Releases at the last source check. Check the live <a href="https://github.com/amran13project/ForgeEngine/releases">GitHub Releases page</a> for any subsequently published artifacts.</section>
+<section class="card"><h2>Windows x64 source build</h2><p>Install CMake 3.20+, Visual Studio 2022 C++ desktop tools, and the Windows SDK. Then run:</p><pre class="code">cmake -S . -B build -A x64 -DFORGE_BUILD_TESTS=ON
+cmake --build build --config Release --parallel 4
+ctest --test-dir build -C Release --output-on-failure</pre><p>See <a href="docs/build-windows.html">build details</a>. The alpha release workflow will package the editor, runtime, quick-start guide, notices, and sample after tag-triggered Windows tests pass.</p></section>
+<section class="card"><h2>Minimum runtime expectations</h2><p>Windows x64 needs an interactive desktop and a compatible Windows runtime. Linux builds need an interactive X11 session and the system X11 libraries. A discrete GPU is not required for the current software wireframe preview.</p></section></main>
+<footer class="site-footer"><div class="footer-inner"><p>No release success is implied by this page.</p><p><a href="index.html">Home</a> · <a href="license.html">License</a></p></div></footer></body></html>

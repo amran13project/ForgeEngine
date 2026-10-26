@@ -18,6 +18,7 @@
 #include "account/AccountPolicy.h"
 #include "ai_platform/AIOrchestrator.h"
 
+#include <algorithm>
 #include <cassert>
 #include <chrono>
 #include <cstdlib>
@@ -79,8 +80,11 @@ int main() {
 
     scene::Scene reopenedScene;
     if (!check(reopenedScene.load(project.root / project.defaultScene, error), "scene persistence reload")) return 1;
-    const auto* reopenedCube = reopenedScene.selected();
-    if (!check(reopenedCube && reopenedCube->name == "Cube", "selected cube persisted")) return 1;
+    if (!check(reopenedScene.selected() == nullptr, "selection remains transient")) return 1;
+    const auto reopenedCubeIt = std::find_if(reopenedScene.entities().begin(), reopenedScene.entities().end(),
+        [&](const scene::Entity& entity) { return entity.id == cube.id; });
+    const auto* reopenedCube = reopenedCubeIt == reopenedScene.entities().end() ? nullptr : &*reopenedCubeIt;
+    if (!check(reopenedCube && reopenedCube->name == "Cube", "cube entity persisted")) return 1;
     if (!check(reopenedCube && reopenedCube->position.x == 2.0f && reopenedCube->position.y == 3.0f && reopenedCube->position.z == -1.0f, "transform persistence")) return 1;
     if (!check(reopenedCube && reopenedCube->rotation.y == 45.0f && reopenedCube->scale.x == 1.5f, "rotation/scale persistence")) return 1;
 

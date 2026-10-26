@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Implemented, partial, and planned Forge Engine features."><title>Feature Status - Forge Engine</title><link rel="stylesheet" href="assets/site.css"></head>
+<body><a class="skip-link" href="#main">Skip to content</a><header class="site-header"><div class="header-inner"><a class="brand" href="index.html">FORGE ENGINE<span>FEATURE STATUS</span></a><nav aria-label="Main navigation"><a href="index.html">Home</a><a href="docs/index.html">Docs</a><a href="roadmap.html">Roadmap</a><a href="downloads.html">Downloads</a></nav></div></header>
+<main id="main" class="content"><p class="eyebrow">Current capabilities</p><h1>Working foundations, clearly bounded.</h1><p class="lead">Forge Engine is an early native C++20 project. The status labels below refer to tested workflows, not just the presence of source files.</p>
+<div class="grid"><article class="card"><span class="status">Implemented baseline</span><h2>Projects and scenes</h2><p>Project manifest and folder creation; version-2 scene JSON; entity IDs, transforms, visibility, locks; validation before scene replacement.</p></article>
+<article class="card"><span class="status partial">Partial</span><h2>Native editor and runtime</h2><p>Win32 and X11 window paths, scene list, keyboard translation, wireframe preview, basic play loop and separate runtime.</p></article>
+<article class="card"><span class="status partial">Partial</span><h2>Assets and diagnostics</h2><p>File indexing/classification and structural project checks. No importer, reimport queue, dependency graph, or full validation.</p></article>
+<article class="card"><span class="status partial">Partial</span><h2>Packaging</h2><p>Copies project files into a payload directory and writes a manifest. It does not compile the game or create a release export.</p></article>
+<article class="card"><span class="status planned">Planned</span><h2>Renderer and import</h2><p>GPU rendering, depth, lighting, materials, 2D, glTF import, and asset upload.</p></article>
+<article class="card"><span class="status planned">Planned</span><h2>Creator tools</h2><p>Editable inspector, hierarchy parenting, undo/redo, dirty-state prompts, mature runtime physics, audio, animation, and scripting.</p></article>
+<article class="card"><span class="status planned">Planned</span><h2>AI</h2><p>No AI UI or provider is available. A privacy-first design is recorded in the <a href="roadmap.html#ai">AI roadmap</a>.</p></article></div>
+<p>For implementation details see the <a href="docs/index.html">documentation</a> and <a href="roadmap.html">roadmap</a>.</p></main>
+<footer class="site-footer"><div class="footer-inner"><p>Last status source: repository feature matrix.</p><p><a href="index.html">Home</a> · <a href="privacy.html">Privacy</a></p></div></footer></body></html>

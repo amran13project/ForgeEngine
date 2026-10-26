@@ -13,6 +13,9 @@ RuntimeApp::RuntimeApp(platform::NativeWindow& window, const project::ProjectInf
 
 bool RuntimeApp::initialize(std::string& error) {
     if (!scene_.load(project_.root / project_.defaultScene, error)) return false;
+    const auto player = std::find_if(scene_.entities().begin(), scene_.entities().end(),
+        [](const scene::Entity& entity) { return entity.type == "Mesh"; });
+    if (player != scene_.entities().end()) scene_.select(player->id);
     renderer_.setCamera({{0.0f, 2.0f, 8.0f}, 0.0f, 0.0f, 60.0f});
     return true;
 }
@@ -43,6 +46,9 @@ void RuntimeApp::onEvent(const platform::InputEvent& event) {
         const auto index = static_cast<std::size_t>(event.key);
         if (index < keys_.size()) keys_[index] = true;
         if (event.key == platform::Key::Escape) window_.requestClose();
+    } else if (event.type == platform::InputEvent::Type::KeyUp) {
+        const auto index = static_cast<std::size_t>(event.key);
+        if (index < keys_.size()) keys_[index] = false;
     }
 }
 

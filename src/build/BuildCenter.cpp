@@ -102,7 +102,7 @@ BuildResult BuildCenter::build(const std::filesystem::path& projectRoot,
     manifest << "Forge Engine Build Manifest\n"
              << "Configuration: " << (configuration.empty() ? "Development" : configuration) << "\n"
              << "Project: " << root.filename().string() << "\n"
-             << "Engine: Forge Engine Professional 3.1\n"
+             << "Engine: Forge Engine 3.2.0\n"
              << "Files packaged: " << result.files << "\n"
              << "Payload: Project/\n"
              << "Status: SUCCESS\n";

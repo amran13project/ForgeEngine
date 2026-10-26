@@ -1,0 +1,44 @@
+name: Forge Engine CI
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-native:
+    name: Windows x64 / ${{ matrix.configuration }}
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        configuration: [Debug, Release]
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Configure CMake
+        run: cmake -S . -B build -A x64 -DFORGE_BUILD_TESTS=ON
+
+      - name: Build editor, runtime, and tests
+        run: cmake --build build --config ${{ matrix.configuration }} --parallel 4
+
+      - name: Run CTest
+        run: ctest --test-dir build -C ${{ matrix.configuration }} --output-on-failure
+
+  website:
+    name: Validate static website
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Check local pages, assets, and fragments
+        run: python3 scripts/validate-website.py

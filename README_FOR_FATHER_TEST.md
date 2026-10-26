@@ -1,69 +1,46 @@
-# Forge Engine — Father Test Package
+# Forge Engine alpha test guide
 
-This package is based on the current Forge Engine Git workflow.
+This guide describes the current native editor/runtime baseline. Do not use old bundles or scripts that push directly to `main`; development should remain on a feature branch and go through a pull request.
 
-## Apply the latest changes to the existing GitHub clone
+## Build on Windows
 
-From inside the local `ForgeEngine` repository:
+Install CMake 3.20+, Visual Studio 2022 C++ desktop tools, and Windows SDK. From PowerShell:
 
-```bat
-git status
-git fetch "C:\Path\To\ForgeEngine_FULL_2026-09-29.bundle" refs/heads/forge-full-20260929:refs/remotes/forge-bundle/forge-full-20260929
-git cherry-pick 6933f2b 38353e5
-git push origin main
+```powershell
+cmake -S . -B build -A x64 -DFORGE_BUILD_TESTS=ON
+cmake --build build --config Release --parallel 4
+ctest --test-dir build -C Release --output-on-failure
 ```
 
-The cherry-pick is intentional: the existing GitHub `main` already contains the 3.1.0 creator-platform commit as `1b88209`; the bundle's 3.1 changes were created from the same 3.1 tree with a different local commit identity.
-
-## Windows build
-
-Run:
-
-```bat
-Build-ForgeEngine-Windows.cmd
-```
-
-The portable builder prepares the LLVM-MinGW Windows compiler when it is not already cached, then builds:
-
-- `bin\ForgeEngine.exe`
-- `bin\ForgeRuntime.exe`
-
-The required compiler runtime DLLs are copied next to the executables.
+The legacy `Build-ForgeEngine-Windows.cmd` can fetch a large portable compiler archive; use it only if you intentionally choose that route.
 
 ## Editor test
 
 Run:
 
-```bat
-Run-ForgeEngine.cmd
+```powershell
+.\build\Release\ForgeEngine.exe
 ```
 
-Test this workflow:
+1. Create a 3D project.
+2. Confirm the project manifest and `Scenes/Main.forgeScene` are created under `ForgeProjects`.
+3. Select an entity and confirm the software wireframe preview and read-only inspector appear.
+4. Use arrow keys or W/S to translate the selected entity.
+5. Save with Ctrl+S, close normally, and reopen the project.
+6. Press F5 to start and stop play mode. Stopping should restore the in-memory editor scene snapshot.
+7. Use the Package action and confirm a content payload and manifest are created. This is not an executable game export.
+8. Run Project Doctor and inspect its summary.
 
-1. Create or log into a Forge account.
-2. Create a 3D project.
-3. Confirm the real project folder appears under `ForgeProjects`.
-4. Confirm Scene Tree, viewport and Inspector appear.
-5. Select the Cube.
-6. Move it with the arrow/W/S keys.
-7. Press `Ctrl+S` / Save.
-8. Close Forge.
-9. Reopen the project and confirm the saved transform remains.
-10. Press Play and confirm Play Mode runs the simulation.
-11. Stop and confirm the editor state is restored.
-12. Press Build and confirm a real `Builds\Development` payload and manifest are created.
-13. Open Project Doctor, AI, Tests and Publish to inspect their current truthful status.
+There is no login, AI tool, GPU renderer, model importer, undo/redo, or interactive project folder picker.
 
 ## Runtime test
 
-After building, run:
-
-```bat
-Run-ForgeRuntime.cmd "C:\Users\<user>\ForgeProjects\<project>"
+```powershell
+.\build\Release\ForgeRuntime.exe .\samples\ProfessionalStarter3D
 ```
 
-The runtime should open the project scene and respond to W/A/S/D or arrow-key input.
+The runtime needs an interactive Windows desktop. It displays a software wireframe scene and accepts basic input; it does not establish full game-runtime support.
 
-## Important truthfulness rule
+## Reporting
 
-This is a professional native foundation and an expanding engine. Some advanced systems remain foundation/partial implementations. The UI must never claim a platform build, AI provider connection, store upload, or other external action succeeded when it did not actually occur.
+Record the exact OS/compiler, commands, complete output, and whether editor/runtime windows launched. Remove credentials and private project data from logs. A CMake or CTest pass does not prove interactive GUI behavior.

@@ -1,48 +1,65 @@
-# Forge Engine Professional 3.0
+# Forge Engine 3.2.0
 
 **CREATE WITHOUT LIMITS**
 
-Forge Engine is a native game-development platform foundation for creators ranging from first-time users to professional teams. This repository contains the editor, standalone runtime, project workflow, diagnostics, AI orchestration boundary, and publishing foundations.
+Forge Engine is an early, native C++20 editor/runtime foundation. This repository contains two native programs, a local project format, a scene editor baseline, a software wireframe preview, and CMake/CTest build definitions.
 
-## 3.0 Creator + AI Platform
+This is an alpha foundation, not a claim of feature parity with Unity, Unreal, or Godot.
 
-This version adds:
+## Current capabilities
 
-- Forge Account foundation: sign up, login, local-first profile, date of birth, region, language and birthday greeting.
-- Forge AI foundation: project-aware orchestration interface with explicit modes, plans, confirmations and provider abstraction.
-- Forge Publish Center: platform selection, metadata model, validation and release-build workflow.
-- Compliance Checker: blocking issues and warnings before submission.
-- Localization Manager: multilingual platform foundation.
-- Accessibility settings foundation.
-- Security Center: project secret-file detection and source-control guidance.
-- Release Manager: version/build/channel manifests.
-- Workspace profiles for Beginner, Creator, Developer and Professional experiences.
+- Native `ForgeEngine` editor and separate `ForgeRuntime`.
+- Local project creation and project discovery under the default `ForgeProjects` folder.
+- Version-2 JSON scene persistence with validated entity IDs, names, transforms, and selection state kept transient.
+- Basic scene selection, keyboard translation, entity creation/deletion, and play snapshot/restore.
+- Software-projected wireframe preview; no GPU renderer or lighting.
+- Asset file scanning/classification; no model or texture importer.
+- A Project Doctor baseline and local content package operation.
+- A runnable sample project in `samples/ProfessionalStarter3D`.
 
-## Honest capability boundary
+See [feature status](docs/feature-status.md) and the [roadmap](docs/roadmap.md) for known limits. The user-facing editor has no account or AI feature and makes no network requests. AI is a planned later phase.
 
-The editor and runtime are native C++20 applications. Account data is offline-first for development and local workflows; production public accounts require a hosted authentication provider. Store upload is intentionally gated behind connected developer credentials and platform approval. Forge does not claim automatic store acceptance.
+## Build and test
 
-## Build
+### Windows x64
 
-### Linux development
+Requirements: CMake 3.20+, Visual Studio 2022 C++ desktop workload, and Windows SDK.
+
+```powershell
+cmake -S . -B build -A x64 -DFORGE_BUILD_TESTS=ON
+cmake --build build --config Release --parallel 4
+ctest --test-dir build -C Release --output-on-failure
+```
+
+The repository's Windows CI runs Debug and Release builds and CTest on `windows-latest`. A CI pass does not by itself verify interactive GUI behavior.
+
+### Linux/X11 development
+
+Requirements: a C++20 compiler, CMake 3.20+, and X11 development libraries.
 
 ```bash
-cmake -S . -B build -G Ninja -DFORGE_BUILD_TESTS=ON
-cmake --build build --target ForgeEngine ForgeRuntime ForgeCoreTests
+cmake -S . -B build -DFORGE_BUILD_TESTS=ON
+cmake --build build --parallel 4
 ctest --test-dir build --output-on-failure
 ```
 
-### Windows creator build
+Linux is not included in the current hosted CI matrix.
 
-Run `Build-ForgeEngine-Windows.cmd`. The portable builder downloads/reuses a native Windows LLVM-MinGW toolchain inside `Toolchain/`; it does not require a system CMake installation.
+## Run
 
-## Repository policy
+```powershell
+.\build\Release\ForgeEngine.exe
+.\build\Release\ForgeRuntime.exe .\samples\ProfessionalStarter3D
+```
 
-Git is the source of truth. Development artifacts, toolchains, build output and account data must not be committed.
+See [quick start](docs/quick-start.md) and [Windows build guide](docs/build-windows.md). The editor's Package command copies project files and writes a manifest; it does not compile a game executable.
 
+## Website and release
 
-## 3.2.0 Full Creator Candidate
+The static website is in [`website/`](website/). Run `python3 scripts/validate-website.py` to check its local links. GitHub Actions validates native builds and the website; Pages deployment is configured for `main` only.
 
-This branch consolidates the native editor/runtime workflow and adds reusable input, gameplay, animation, UI, material, prefab, and hot-reload foundations under the same C++20/CMake architecture.
+No verified alpha release asset was available at the time of this update. Check the live [GitHub Releases page](https://github.com/amran13project/ForgeEngine/releases). Do not treat a source build or content package as a game export.
 
-The repository is still explicit about platform/toolchain boundaries: unsupported targets are reported rather than marked successful, and external store publishing requires real credentials and platform approval.
+## Branding and license
+
+The final app icon is pending owner-provided artwork. See [`assets/branding/README.md`](assets/branding/README.md) for the optional Windows CMake icon setting. Source is under the [MIT License](LICENSE.txt); third-party dependencies are recorded in [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).

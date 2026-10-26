@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Beginner tutorial: create, edit, save, and run a Forge Engine scene.">
+  <title>First Scene Tutorial - Forge Engine</title><link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header"><div class="header-inner"><a class="brand" href="../index.html">FORGE ENGINE<span>TUTORIALS</span></a><nav aria-label="Main navigation"><a href="../index.html">Home</a><a href="../docs/index.html">Docs</a><a href="../features.html">Features</a><a href="../downloads.html">Downloads</a></nav></div></header>
+  <main id="main" class="content">
+    <p class="eyebrow">Lesson 01 · Beginner · Windows x64</p><h1>Create, save, and run your first scene.</h1>
+    <p class="lead">This lesson uses the actual project and scene flow currently available. It does not require art assets or an online account.</p>
+    <section class="card"><h2>Prerequisites</h2><p>Build ForgeEngine and ForgeRuntime using the <a href="../docs/index.html">documentation</a>. The starter sample is in <code>samples/ProfessionalStarter3D</code>.</p></section>
+    <section class="card"><h2>1. Open the sample</h2><p>Copy <code>samples/ProfessionalStarter3D</code> into the default <code>ForgeProjects</code> directory, launch ForgeEngine, then choose <strong>Open Project</strong>. The current project manager discovers this folder and opens its first valid project.</p></section>
+    <section class="card"><h2>2. Select and move an entity</h2><p>Choose Cube in the scene list. The center area draws a software wireframe preview; the inspector shows read-only transform values. Use the arrow keys to translate across the ground plane and W/S to move vertically.</p><p>Use <strong>+ Cube</strong> to add a mesh, or Delete to remove the selected unlocked entity. There is no undo/redo yet.</p></section>
+    <section class="card"><h2>3. Save and reopen</h2><p>Press Ctrl+S or select Save. The current scene is written as version-2 JSON to the project's default scene path. Close the editor normally and launch it again to verify the saved project. Failed or unsupported scene loads are reported and do not silently replace the current scene.</p></section>
+    <section class="card"><h2>4. Run the scene</h2><p>Press F5 to enter play mode and F5 again to stop. The editor restores its scene snapshot when play stops. To run the separate runtime, use:</p><pre class="code">.\build\Release\ForgeRuntime.exe .\samples\ProfessionalStarter3D</pre><p>The runtime requires an interactive desktop. Its renderer is still a wireframe preview; no executable export or GPU renderer is included.</p></section>
+    <section class="notice"><strong>Expected limitations:</strong> project selection, scene editing, rendering, and packaging remain early-stage. Consult the <a href="../features.html">feature status</a> before relying on an unsupported workflow.</section>
+  </main>
+  <footer class="site-footer"><div class="footer-inner"><p>Lesson verified against current source behavior; graphical runtime still requires platform testing.</p><p><a href="../index.html">Home</a> · <a href="../roadmap.html">Roadmap</a></p></div></footer>
+</body>
+</html>

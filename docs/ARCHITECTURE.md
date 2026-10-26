@@ -1,36 +1,32 @@
-# Forge Engine Professional Architecture
+# Forge Engine architecture
 
-## Process model
+## Executables and core library
 
-ForgeEngine is the editor process. ForgeRuntime is the standalone game runtime process. Both share the same engine core modules but the editor-only layer is not linked into the runtime target.
+- `ForgeEngine` is the native editor process.
+- `ForgeRuntime` opens a project directory and runs the standalone runtime loop.
+- `ForgeCore` is a static C++20 library shared by the executables and core tests.
+- The current renderer is a software projection/wireframe path drawn by the native window layer. It is not a GPU backend.
 
-## Module ownership
+## Current module ownership
 
-- core: lifecycle, registry, shared math
-- project: project creation/opening and metadata
-- scene: entity and scene persistence
-- renderer: 3D projection foundation
-- assets: asset indexing and metadata
-- physics: simulation baseline
-- ai: behavior and provider abstraction
-- scripting: visual graph execution baseline
-- audio: WAV inspection baseline
-- network: deterministic network simulation lab
-- profiler: frame/sample measurement
-- build: content packaging and runtime bundling
-- doctor: structural diagnostics
-- recovery: project snapshots
-- plugins: plugin discovery
-- testing: lightweight test runner
-- world: procedural scene generation baseline
-- platform: native window/input abstraction
-- editor: Forge Hub + editor UI
-- runtime: standalone game application shell
+- `core`: engine system registry and shared math.
+- `platform`: native Win32/X11 window, input events, and environment access.
+- `project`: local project creation, metadata, discovery, and open.
+- `scene`: entity data, transforms, and version-2 JSON persistence.
+- `renderer`: software projection helpers.
+- `assets`: file enumeration and extension classification, not asset import.
+- `runtime`: separate project-driven scene display and basic input behavior.
+- `editor`: Forge Hub, scene list, wireframe preview, inspector display, diagnostics, and play mode.
+- `build`: project-content copying and a manifest, not executable compilation.
+- Other physics, audio, animation, scripting, account, AI, and creator modules are foundation code unless a user-facing workflow is explicitly identified in the feature status.
 
-## Dependency principle
+## Scene persistence
 
-The Forge System registry owns initialization order and declares dependencies. New systems should extend the registry instead of creating competing global managers.
+Version 2 scene files are JSON objects with an `entities` array. The loader validates the supported version, entity IDs, required fields, JSON escapes, vector values, and duplicate IDs before replacing the current scene. A failed load leaves the current scene unchanged. Selection is transient and not serialized. No version-1 migration is currently provided.
 
-## Windows packaging
+## Boundaries
 
-The Windows builder downloads a native `llvm-mingw-<tag>-ucrt-x86_64.zip` toolchain. The package is kept under `Toolchain/` and is not installed into PATH. The compiler is invoked directly with a console subsystem and `mainCRTStartup` entry point so the application remains compatible with a standard C++ `main()` function.
+- Project files are local and no telemetry or network service is enabled by the editor.
+- Windows builds use the Win32 window layer and Linux builds use X11.
+- External model import, GPU rendering, executable export, and store submission are not implemented.
+- Account and AI scaffolding from prior repository work is not exposed by the current editor startup or toolbar.

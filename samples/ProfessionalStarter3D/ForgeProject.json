@@ -1,0 +1,13 @@
+{
+  "projectId": "forge-professional-starter-3d",
+  "projectName": "ProfessionalStarter3D",
+  "engineVersion": "3.2.0",
+  "projectVersion": "1.0.0",
+  "defaultScene": "Scenes/Main.forgeScene",
+  "template": "3D",
+  "targetPlatforms": ["Windows", "Linux"],
+  "enabledModules": ["Core", "Projects", "Scenes", "Assets", "SoftwareWireframeRenderer", "Runtime"],
+  "rendering": {"profile": "SoftwareWireframe"},
+  "physics": {"backend": "ForgePhysicsBasic"},
+  "networking": {"enabled": false}
+}

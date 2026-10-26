@@ -3,13 +3,13 @@
 #include <iostream>
 
 int main() {
-    std::cout << "Forge Engine Professional 3.2.0 - CREATE WITHOUT LIMITS\n";
+    std::cout << "Forge Engine 3.2.0 - CREATE WITHOUT LIMITS\n";
     forge::core::ForgeSystem system;
     if (!system.initialize()) {
         std::cerr << "Forge Engine initialization failed: " << system.lastError() << "\n";
         return 2;
     }
-    forge::platform::NativeWindow window("Forge Engine Professional", 1440, 900);
+    forge::platform::NativeWindow window("Forge Engine", 1440, 900);
     if (!window.create()) {
         std::cerr << "Native window creation failed\n";
         system.shutdown();

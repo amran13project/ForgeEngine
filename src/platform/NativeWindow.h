@@ -15,10 +15,11 @@ enum class Key {
 enum class MouseButton { Left, Right, Middle };
 
 struct InputEvent {
-    enum class Type { None, KeyDown, KeyChar, MouseDown, MouseUp, MouseMove, Close, Resize } type{Type::None};
+    enum class Type { None, KeyDown, KeyUp, KeyChar, MouseDown, MouseUp, MouseMove, Close, Resize } type{Type::None};
     Key key{Key::Unknown};
     char32_t character{0};
     MouseButton mouseButton{MouseButton::Left};
+    bool control{false};
     int x{0};
     int y{0};
     int width{0};
